@@ -1,0 +1,32 @@
+<x-app-layout>
+    @php
+        $websiteId = (@$website->id);
+        $title = title(@$websiteId)." Campanha";
+    @endphp
+    
+    <x-app.box>
+        
+        <x-app.form.form action="{{route('website-store')}}" method="POST">
+            
+            <x-app.form.input type="hidden" name="id" :value="@$website->id"></x-app.form.input>
+
+            <div class="row">
+                <x-app.form.input size="2" type="select" label="Empresa" name="company_id" :value="@$website->company_id" :options="@$companies"></x-app.form.input>
+            </div>
+            <div class="row">
+                <x-app.form.input size="2" type="text" label="Nome" name="name" :value="@$website->name"></x-app.form.input>
+                <x-app.form.input size="6" type="text" label="URL" name="url" :value="@$website->url"></x-app.form.input>
+                <x-app.form.input size="2" type="select" label="Categoria" name="category_id" :value="@$website->category_id" :options="@$categories"></x-app.form.input>
+                <x-app.form.input size="2" type="select" label="Status" name="status_id" :value="@$website->status_id"></x-app.form.input>
+            </div>
+            <div class="row">
+                <x-app.form.btn size="3" type="back" label="Voltar" :href="route('website')"></x-app.form.btn>
+                <x-app.form.btn size="3" type="submit" label="Salvar"></x-app.form.btn>
+            </div>
+                    
+        </x-app.form.form>
+        
+    </x-app.box>
+
+</x-app-layout>
+

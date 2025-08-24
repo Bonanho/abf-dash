@@ -1,0 +1,155 @@
+header{
+    background-color: var(--secundaryColor);
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.nav-item.tab-active > a{
+    color: var(--secundaryColor) !important;
+    text-decoration: underline;
+    text-underline-offset: 8px;
+}
+.nav-item.tab-not-active > a{
+    color: var(--fontColor) !important;
+}
+
+.nav-item > a{
+    color: var(--bodyColor) !important;
+    font-size: large;
+    font-weight: bold;
+}
+.nav-item.active > a{
+    color: var(--baseColorMedium) !important;
+}
+
+/* ################## */
+/*     MELHORAR       */ 
+/* ################## */
+
+
+/* ################## */
+/*      VALIDAR       */ 
+/* ################## */
+
+.navbar-expand-lg {
+    max-width: 1600px !important;
+    padding: 0;
+}
+.navbar-expand-lg .navbar-collapse{
+    justify-content: center;
+}
+.navbar-nav{
+    gap: 3rem;
+
+}
+.nav-links ul{
+    display: flex;
+    gap: 1rem;
+    margin: 0;
+    line-height: 1.5;
+
+}
+
+.nav-links a:hover{
+    color: #3496E1;
+    transition: color .5s;
+}
+
+.logo{
+    align-items: flex-start !important  ;
+}
+.logo img{
+    padding: 0.5rem;
+    padding-bottom: 0 !important;
+    
+}
+
+.nav-itens{
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+
+.notification{
+    position: relative;
+}
+
+span.number{
+    font-size: 10px;
+    background-color: #2EE310 !important;
+}
+
+.circle{
+    position: absolute;
+    top: 0;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    clip-path: circle(50%);
+    background: #2EE310;
+}
+
+.user{
+    margin-left: 2rem;
+    padding: 0.1rem 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 30px;
+    color: var(--bodyColor)
+}
+
+.bi-person-circle::before {
+    content: "\f4d7";
+    font-size: 30px;
+}
+
+.mob-only{
+    display: none;
+}
+
+
+
+#navbarNavDarkDropdown > ul > li> ul > li.active > a{
+    color: var(--secundaryColor) !important;
+}
+
+#navbarNavDarkDropdown > ul > li> ul > li.active > a:hover{
+    color: #000 !important;
+}
+
+.dropdown-item:focus, .dropdown-item:hover{
+    background-color: var(--secundaryColor) !important;
+    color: #000 !important;
+}
+
+.navbar-expand-lg .navbar-nav .dropdown-menu{
+background-color: #464644 !important;
+}
+
+.dropdown-menu.show{
+    background-color: #464644 !important;
+
+}
+
+.dropdown-menu.show > a.dropdown-item {
+    color: #fff !important;
+}
+
+body > div > header > nav > div.user > div > ul > li > a{
+    color: #fff !important;
+
+}
+
+body > div > header > nav > div.user > div > ul > li:nth-child(1) > a.dropdown-item.role{
+    /* color: #ffc107 !important; */
+    color: #938b74 !important;
+    font-size: 0.7rem;
+}
+.navbar-brand{
+    margin: 0 !important;
+}

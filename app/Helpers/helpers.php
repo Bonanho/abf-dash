@@ -1,0 +1,369 @@
+<?php
+
+use App\Models\Advertiser;
+use App\Models\Delivery\LineItem;
+use App\Models\Retail;
+use App\Models\RetailBranch;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
+
+function setSession( $key, $value)
+{
+    session()->put($key, $value);
+
+    return true;
+}
+
+
+function getSession( $key )
+{
+    return session($key, null);
+}
+
+function sessionMessage($type, $message)
+{
+    Session::flash($type, $message); 
+}
+
+
+function codeEncrypt( ?string $value )
+{
+    $char = ['P','Q','R','S','T','U','V','W','X','Y','Z'];
+
+    $code = $char[rand(0,10)] . $char[rand(0,10)] . $char[rand(0,10)];
+    $code.= rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
+    $code.= $char[rand(0,10)] . $char[rand(0,10)] . $char[rand(0,10)] . $char[rand(0,10)] ;
+
+    return $code;
+}
+
+function codeDecrypt( $value=null )
+{
+    if(!$value)
+        return null;
+
+    $code = substr($value, 3, -4);
+
+    $code = base64_decode(str_pad(strtr($code, '-_', '+/'), strlen($code) % 4, '=', STR_PAD_RIGHT));
+
+    return $code;
+}
+
+function batchInsert($deliveries, $class)
+{
+    DB::beginTransaction();
+    try {
+        foreach (array_chunk($deliveries,1000) as $deliveriesChunk) {
+
+            $class::insert($deliveriesChunk);
+        }
+    }
+    catch (Exception $e){
+        echo("ERRO batch insert {$class}".$e->getMessage());
+        DB::rollback();
+        return false;
+    }
+    DB::commit();
+
+    return true;
+}
+
+
+function getAuthUserId()
+{
+    return Auth::id() ?? 0;
+}
+
+function urlExists($url){
+    $headers = get_headers($url);
+    return stripos($headers[0],"200 OK") ? true : false;
+}
+
+
+function errorInfo($err)
+{
+    if(hasScope("Super"))
+        return "{$err->getMessage()} {$err->getFile()} {$err->getLine()}";
+
+    return "{$err->getMessage()}";
+}
+
+function hasScope($scope)
+{
+    return User::hasScope($scope);
+}
+
+
+function hasProfile($scope)
+{
+    return User::hasProfile($scope);
+}
+
+
+function getInicialRoute()
+{
+    return hasProfile('Retail') ? 'dash-retail' : 'dash-adv';
+}
+
+
+function errorMessage($err)
+{
+    return (hasScope('Admin')) ? "\n{$err->getMessage()} {$err->getFile()} {$err->getLine()}" : "";
+}
+
+
+function getCnpjInfoApi ($cnpj) {
+        
+    $cnpj = preg_replace( '/[^0-9]/', '', $cnpj );
+
+    if ( strlen( $cnpj ) === 11 ) {
+        return false;
+    } else {
+        $token="de267d4af60430ca9280bf5d5b3d08624301f5677d8d7e13fc2aca430fd6a738";
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+        CURLOPT_URL => "https://www.receitaws.com.br/v1/cnpj/$cnpj",
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "GET",
+        CURLOPT_HTTPHEADER => array(
+            "Content-Type: application/json",
+            "Authorization: Bearer $token"
+        ),
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+    }
+
+    $response = json_decode($response);
+
+    if(isset($response->status) && $response->status == "ERROR")
+        return false;
+
+    return $response;
+}
+
+
+function getCepApi ($cep)
+{
+    $cep = preg_replace( '/[^0-9]/', '', $cep );
+
+    if ( strlen( $cep ) != 8 ) {
+        $response = 'null';
+    } else {
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => "https://viacep.com.br/ws/$cep/json/",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Content-Type: application/json"
+            ),
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+    }
+
+    return $response;
+}
+
+
+// ***
+// TRADOOH 
+
+/**
+ * @param string $format: "array", "obj" or "id".
+ */
+function getRetails($format = 'array')
+{
+    $userRetails = session('user_retails');
+
+    if(!$userRetails){
+        $userRetailsObj = Retail::getUserRetails();
+        $userRetails = collectToArray($userRetailsObj, 'id', 'name');
+        session(['user_retails' => $userRetails]);
+    }
+
+    if($format == 'obj'){
+        return ($userRetailsObj) ?? Retail::whereIn('id', array_keys($userRetails))->get();
+    }
+    if($format == "id"){
+        return array_keys($userRetails);
+    }
+
+    return $userRetails;
+}
+
+
+/**
+ * @param string $format: "array", "obj" or "id".
+ */
+function getBranches($format = 'array')
+{
+    $userBranches = session('user_branches');
+
+    if(!$userBranches){
+        $userBranchesObj = RetailBranch::getUserBranches();
+        $userBranches = collectToArray($userBranchesObj, 'id', 'name');
+        session(['user_branches' => $userBranches]);
+    }
+
+    if($format == 'obj'){
+        return ($userBranchesObj) ?? RetailBranch::whereIn('id', array_keys($userBranches))->get();
+    }
+    if($format == "id"){
+        return array_keys($userBranches);
+    }
+
+    return $userBranches;
+}
+
+
+/**
+ * @param string $format: "array", "obj" or "id".
+ */
+function getAdvertisers($format = 'array')
+{
+    $userAdvertisers = session('user_advertisers');
+
+    if(!$userAdvertisers){
+        $userAdvertisersObj = Advertiser::getUserAdvertisers();
+        $userAdvertisers = collectToArray($userAdvertisersObj, 'id', 'name');
+        session(['user_advertisers' => $userAdvertisers]);
+    }
+
+    if($format == 'obj'){
+        return ($userAdvertisersObj) ?? Advertiser::whereIn('id', array_keys($userAdvertisers))->get();
+    }
+    if($format == "id"){
+        return array_keys($userAdvertisers);
+    }
+
+    return $userAdvertisers;
+}
+
+function getAdvLineItems($format = "array")
+{
+    $userAdvLines = session('user_adv_lines');
+
+    if(!$userAdvLines){
+        $userAdvLines = LineItem::select('id', 'name')->whereIn('advertiser_id', getAdvertisers('id'))->get();
+        $userAdvLines = collectToArray($userAdvLines, 'id', 'name');
+        session(['user_adv_lines' => $userAdvLines]);
+    }
+
+    return $userAdvLines;
+}
+
+
+function collectToArray($collection, $key, $value)
+{
+    $array = [];
+    foreach($collection as $obj)
+    {
+        $array[$obj->$key] = $obj->$value;
+    }
+    return $array;
+}
+
+
+function costCalc($cpm, $viewers)
+{
+    return ($cpm * $viewers) / 1000;
+}
+
+
+function cpmCalc($cost, $viewers)
+{
+    if($viewers == 0)
+        return 0;
+
+    return $cost/($viewers/1000);
+}
+
+
+function getUserRoute($route)
+{
+    return User::getRoute($route);
+}
+
+
+function modifyHourByString($stringTime, $modify)
+{
+    $date = new DateTime($stringTime);
+    $date->modify("$modify hour");
+    return $date->format('H:i:s');
+}
+
+function datetimesFromDate($date)
+{
+    $dateTimes = [];
+    $dateTimes[] = $date->format("Y-m-d H:i:s");
+
+    for ($i=0; $i < 23; $i++) { 
+        $dateTimes[] = $date->modify("+1 hour")->format("Y-m-d H:i:s");
+    }
+
+    return $dateTimes;
+}
+
+
+// ***
+// FRONT 
+
+function title( $id = null )
+{
+    $title = ($id) ? "Editar" : "Criar";
+
+    return $title;
+}
+
+function classForm()
+{   
+    $class = "form-control";
+
+    return $class;
+}
+
+function classFormDiv( $size )
+{   
+    $class = "form-group col-md-$size";
+    return $class;
+}
+
+
+function formatMoney ($value):String
+{
+    $result = 'R$ ' . number_format($value, 2, ',', '.');
+    return $result;
+}
+function formatThousand ($value)
+{
+    $result = number_format($value, 0, "", ".");
+
+    return $result;
+}
+function formatPercent($number, $integer = false)
+{
+    $decimal = ($integer) ? 0 : 2;
+    return number_format( ($number *100) , $decimal, '.', '');
+}
+function space($n) {
+    for($i=0; $i<$n; $i++) {
+        echo "&nbsp;";
+    }
+}
+?>
