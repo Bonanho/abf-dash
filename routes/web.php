@@ -3,12 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 
+use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Websites;
+use App\Http\Controllers\Sources;
+use App\Http\Controllers\Categories;
 
 use App\Http\Controllers\Clusters;
-use App\Http\Controllers\Categories;
 use App\Http\Controllers\ApiController;
-use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Reports;
 use App\Http\Controllers\Users;
 
@@ -35,13 +36,16 @@ Route::prefix('website')->middleware('auth')->group( function()
 # Admin
 Route::prefix('source')->middleware('auth')->group( function()
 {
-    Route::get('list',[Clusters::class, 'index'])->name('source');
+    Route::get('list',[Sources::class, 'index'])->name('source');
+    Route::get('edit/{id?}',[Sources::class, 'edit'])->name('source-edit');
+    Route::post('store',[Sources::class,'store'])->name('source-store');
 });
 
-#Category
 Route::prefix('category')->middleware('auth')->group( function()
 {
     Route::get('list',[Categories::class, 'index'])->name('category');
+    Route::get('edit/{id?}',[Categories::class, 'edit'])->name('category-edit');
+    Route::post('store',[Categories::class,'store'])->name('category-store');
 });
 
 
@@ -64,10 +68,10 @@ Route::prefix('user')->middleware('auth')->group( function()
 
 #####
 # API
-Route::prefix('api')->middleware('auth')->group( function()
-{
-    Route::post('clusters-manage',[ApiController::class, 'clustersManage']);
-});
+// Route::prefix('api')->middleware('auth')->group( function()
+// {
+//     Route::post('clusters-manage',[ApiController::class, 'clustersManage']);
+// });
 
 
 

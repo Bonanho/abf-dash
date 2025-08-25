@@ -4,20 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ApiClusters extends Model
+class ReportPost extends Model
 {
-    public $table = 'api_clusters';
+    public $table = 'reports_post';
 
     protected $casts = [
-        'category' => 'object',
-        'list' => 'object',
         'doc' => 'object',
     ];
 
     ####################
     ### RELATIONSHIP ###
-    public function List() {
-        return $this->hasMany(ClusterList::class, 'cluster_id', 'id');
+    public function Website() {
+        return $this->belongsTo(Website::class, 'website_id', 'id');
     }
 
     ###############

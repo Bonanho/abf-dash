@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ReportCampaign extends Model
+class ReportAds extends Model
 {
-    public $table = 'reports_campaign';
+    public $table = 'reports_ads';
 
     protected $casts = [
         'doc' => 'object',
@@ -14,9 +14,10 @@ class ReportCampaign extends Model
 
     ####################
     ### RELATIONSHIP ###
-    public function Campaign() {
-        return $this->hasOne(Campaign::class, 'id', 'campaign_id');
+    public function Website() {
+        return $this->belongsTo(Website::class, 'website_id', 'id');
     }
+
     ###############
     ### METHODS ###
 }

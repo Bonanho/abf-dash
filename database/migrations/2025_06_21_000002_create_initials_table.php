@@ -48,6 +48,7 @@ return new class extends Migration
 
         Schema::create('sources', function (Blueprint $table) {
             $table->id();
+            $table->integer('category_id');
             $table->string('name');
             $table->string('url');
             $table->json('doc')->nullable();
