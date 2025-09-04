@@ -89,6 +89,9 @@ return new class extends Migration
             $table->integer('source_id');
             $table->integer('post_id');
             $table->string('endpoint');
+            $table->json('doc')->nullable(); 
+            $table->json('post_data1')->nullable(); 
+            $table->json('post_data2')->nullable(); 
             $table->tinyinteger('status_id')->default(0);
             $table->timestamps();
         });

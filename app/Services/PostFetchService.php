@@ -6,17 +6,30 @@ use App\Models\SourceQueue;
 
 class PostFetchService 
 {
-    public $path;
-    public $gpushConfig;
+    public $source;
+    public $sourceQueue;
+    public $apiUrlBase;
+    public $apiUrlBasePost;
+    public $apiUrlBaseMedia;
+    public $apiUrlBaseCategory;
 
-    const FETCH_URL_PATTERN = "/wp-json/wp/v2/posts/";
+    public function __construct( $source )
+    {
+        $this->source = $source;
 
-    public static function fetchNewPost( $source )
+        $this->apiUrlBase         = $this->source->url . "/wp-json/wp/v2/" ;
+        $this->apiUrlBasePost     = $this->source->url . "/wp-json/wp/v2/posts/" ;
+        $this->apiUrlBaseMedia    = $this->source->url . "/wp-json/wp/v2/media/" ;
+        $this->apiUrlBaseCategory = $this->source->url . "/wp-json/wp/v2/categories/" ;
+    }
+
+    #####################
+    ### GET NEW POSTS ###
+    public function fetchNewPost()
     {
         try
         {
-            $apiUrlBase = $source->url . self::FETCH_URL_PATTERN ;
-            $apiUrl = $apiUrlBase . "?per_page=1" ;
+            $apiUrl = $this->apiUrlBasePost . "?per_page=1" ;
 
             $ch = curl_init();
             curl_setopt_array($ch, [
@@ -44,7 +57,7 @@ class PostFetchService
 
             $data = json_decode($response);
 
-            return self::defineResult( $apiUrlBase, $data );
+            return $this->defineNewPostsResult( $data );
         }
          catch (\Throwable $e) {
             throw new \Exception("Erro ao buscar no source", 0, $e);
@@ -52,12 +65,12 @@ class PostFetchService
 
     }
 
-    public static function defineResult( $apiUrlBase, $data )
+    protected function defineNewPostsResult( $data )
     {
         $resultData = (object) [];
 
         $resultData->id       = $data[0]->id;
-        $resultData->endpoint = $apiUrlBase . $resultData->id;
+        $resultData->endpoint = $this->apiUrlBasePost . $resultData->id;
         $resultData->data     = $data[0];
 
         $result[] = $resultData;
@@ -65,21 +78,112 @@ class PostFetchService
         return $result;
     }
 
-    public static function getPostData( $sourceQueueId ) 
+    #####################
+    ### GET POST DATA ###
+    public function getPostData( $sourceQueueId ) 
     {
-        $sourceQueue = SourceQueue::find($sourceQueueId);
-        // if( $sourceQueue->status_id != SourceQueue::STATUS_PENDING ){
+        $this->sourceQueue = SourceQueue::find($sourceQueueId);
+        // if( $this->sourceQueue->status_id != SourceQueue::STATUS_PENDING ){
         //     return false;
         // }
 
-        $sourceQueue->setStatus( SourceQueue::STATUS_PROCESSING );
+        $this->sourceQueue->setStatus( SourceQueue::STATUS_PROCESSING );
 
         try
         {
-            $endpoint = $sourceQueue->endpoint;
+            $postData = $this->getWp( $this->sourceQueue->endpoint );
 
+            $this->sourceQueue->status_id  = SourceQueue::STATUS_DONE;
+            $this->sourceQueue->post_data2 = $postData;
+            $this->sourceQueue->save();
+            
+            $doc = $this->defineResultObj( $postData );
+            $this->sourceQueue->doc = $doc;
+            $this->sourceQueue->save();
+            // $result = $this->filterWords( $resultData );
+            return true;
+        }
+        catch (\Throwable $e) 
+        {
+            $this->sourceQueue->setStatus( SourceQueue::STATUS_ERROR );
+            $this->sourceQueue->post_data2 = $e->getMessage(); // $e->serialize($e)
+            $this->sourceQueue->save();
+
+            throw new \Exception("Erro ao buscar no source [{$this->sourceQueue->endpoint}]", 0, $e);
+        }
+    }
+
+
+    private function defineResultObj( $postData )
+    {
+        $post = (object) [];
+
+        $imageData = $this->getImage();
+
+        $post->sourceId         = $this->source->id;
+        $post->post_id          = $postData->id;
+        $post->post_title       = $this->filterWords( $postData->title->rendered );
+        $post->post_description = $postData->yoast_head_json->description ?? strip_tags($postData->excerpt->rendered);
+        $post->post_content     = $this->formatContent( $postData->content->rendered );
+        $post->post_image       = $imageData->url;
+        $post->image_caption    = $imageData->caption;
+        $post->post_category    = $this->getCategory();
+        $post->url_original     = $postData->link;
+
+        return $post;
+    }
+
+    ###########
+    ### AUX ###
+    private function filterWords( $text ) 
+    {
+        $palavrasBloqueadas = [ 'Metrópoles', 'CNN', 'Adrenaline', 'Jornal Cidade', 'O Antagonista', 'Antagonista', 'Mundo Conectado', 'Poder 360', 'Tribuna do Norte' ];
+        $textLower = mb_strtolower($text, 'UTF-8');
+        foreach($palavrasBloqueadas as $palavra) {
+            if(mb_strpos($textLower, mb_strtolower($palavra, 'UTF-8')) !== false) {
+                return true;
+            }
+        }
+
+        return $textLower;
+    }
+
+    private function getImage() 
+    {
+        $post = $this->sourceQueue->post_data2;
+
+        $imageApi = $this->getWp( $this->apiUrlBaseMedia . $post->featured_media );
+
+        if (!empty($post->yoast_head_json->og_image[0]->url)) {
+            $image = $post->yoast_head_json->og_image[0]->url;
+        } elseif (!empty($imageApi->media_details->sizes->full->source_url)) {
+            $image = $imageApi->media_details->sizes->full->source_url;
+        } elseif (!empty($imageApi->source_url)) {
+            $image = $imageApi->source_url;
+        } else {
+            $image = strip_tags($imageApi->guid->rendered);
+        }
+        $result["url"] = $image;
+        $result["caption"] = $imageApi->alt_text ?? strip_tags($imageApi->caption->rendered);
+
+        return (object) $result;
+    }
+
+    private function getCategory() 
+    {
+        $post = $this->sourceQueue->post_data2;
+
+        $category = $this->getWp( $this->apiUrlBaseCategory .$post->categories[0])->name;
+
+        return $category;
+    }
+
+    private function getWp( $endpoint ) 
+    {
+        try
+        {        
             $ch = curl_init();
-                curl_setopt_array($ch, [
+            curl_setopt_array($ch, [
                 CURLOPT_URL => $endpoint,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_SSL_VERIFYPEER => false,
@@ -90,17 +194,20 @@ class PostFetchService
             ]);
             
             $response = curl_exec($ch);
-
+            
             if ($response === false) {
-                $error = curl_error($ch);
+                echo "cURL Error: " . curl_error($ch) . "\n";
+                echo "Endpoint: " . $endpoint . "\n";
                 curl_close($ch);
-                throw new \Exception("cURL Error: {$error} | Endpoint: {$endpoint}");
+                return null;
             }
             
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if ($httpCode !== 200) {
+                echo "HTTP Error: " . $httpCode . "\n";
+                echo "Endpoint: " . $endpoint . "\n";
                 curl_close($ch);
-                throw new \Exception("HTTP Error: {$httpCode} | Endpoint: {$endpoint}");
+                return null;
             }
             
             curl_close($ch);
@@ -112,26 +219,52 @@ class PostFetchService
             
             $decoded = json_decode($response);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                $jsonError = json_last_error_msg();
-                throw new \Exception("JSON Error: {$jsonError} | Response: " . substr($response, 0, 500));
+                echo "JSON Error: " . json_last_error_msg() . "\n";
+                echo "Response: " . substr($response, 0, 500) . "...\n";
+                return null;
             }
-
-            $sourceQueue->status_id = SourceQueue::STATUS_DONE;
-            $sourceQueue->post_data = $decoded;
-            $sourceQueue->save();
             
             return $decoded;
         }
         catch (\Throwable $e) 
         {
-            $sourceQueue->setStatus( SourceQueue::STATUS_ERROR );
-            $sourceQueue->postData = $e->getMessage(); // $e->serialize($e)
-            $sourceQueue->save();
-
-            throw new \Exception("Erro ao buscar no source [{$endpoint}]", 0, $e);
+            throw new \Exception("Erro ao buscar dados do post", 0, $e);
         }
     }
 
+    private function formatContent( $content ) 
+    {
+        // Garantir que o conteúdo está em UTF-8
+        if (!mb_check_encoding($content, 'UTF-8')) {
+            $content = mb_convert_encoding($content, 'UTF-8', 'auto');
+        }
 
+        // $content = $this->filterWords($content);
+        
+        $content = preg_replace('/<script\b[^>]*>(.*?)<\/script>/isu', '', $content);
+        $content = preg_replace('/<style\b[^>]*>(.*?)<\/style>/isu', '', $content);
+        $content = preg_replace('/<footer\b[^>]*>(.*?)<\/footer>/isu', '', $content);
+        $content = preg_replace('/<header\b[^>]*>(.*?)<\/header>/isu', '', $content);
+        $content = preg_replace('/<nav\b[^>]*>(.*?)<\/nav>/isu', '', $content);
+        $content = preg_replace('/<aside\b[^>]*>(.*?)<\/aside>/isu', '', $content);
+        $content = preg_replace('/<div\b[^>]*>(.*?)<\/div>/isu', '', $content);
+        $content = preg_replace('/<article\b[^>]*>(.*?)<\/article>/isu', '', $content);
+        $content = preg_replace('/<figcaption\b[^>]*>(.*?)<\/figcaption>/isu', '', $content);
+        $content = preg_replace('/<figure\b[^>]*>(.*?)<\/figure>/isu', '', $content);
+        $content = preg_replace('/<h6\b[^>]*>(.*?)<\/h6>/isu', '', $content);
+        $content = preg_replace('/<img\b[^>]*>/isu', '', $content);
+        $content = preg_replace('/<svg\b[^>]*>/isu', '', $content);
 
+        $content = str_replace(['<br>', '<br/>', '<br />'], "\n", $content); 
+        //$content = str_replace('FDR', "ZéNewsAi", $content); 
+        // Usar strip_tags com encoding UTF-8
+        $content = strip_tags($content, '<p><br><strong><b><em><i><ul><ol><li><h1><h2><h3><h4><h5><h6><blockquote><pre><code>');
+        $content = preg_replace('/<(p|br|strong|b|em|i|ul|ol|li|h1|h2|h3|h4|h5|h6|blockquote|pre|code)[^>]*>/iu', '<$1>', $content);
+        
+        // Usar mb_ereg_replace para melhor suporte a UTF-8
+        $content = preg_replace('/\s+/u', ' ', $content);
+        $content = trim($content);
+        $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        return $content;
+    }
 }

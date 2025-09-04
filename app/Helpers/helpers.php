@@ -1,13 +1,10 @@
 <?php
 
-use App\Models\Advertiser;
-use App\Models\Delivery\LineItem;
-use App\Models\Retail;
-use App\Models\RetailBranch;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+
+use App\Models\User;
 
 function setSession( $key, $value)
 {
@@ -110,7 +107,7 @@ function getInicialRoute()
 
 function errorMessage($err)
 {
-    return (hasScope('Admin')) ? "\n{$err->getMessage()} {$err->getFile()} {$err->getLine()}" : "";
+    return "\n{$err->getMessage()} {$err->getFile()} {$err->getLine()}";
 }
 
 
@@ -178,94 +175,6 @@ function getCepApi ($cep)
     }
 
     return $response;
-}
-
-
-// ***
-// TRADOOH 
-
-/**
- * @param string $format: "array", "obj" or "id".
- */
-function getRetails($format = 'array')
-{
-    $userRetails = session('user_retails');
-
-    if(!$userRetails){
-        $userRetailsObj = Retail::getUserRetails();
-        $userRetails = collectToArray($userRetailsObj, 'id', 'name');
-        session(['user_retails' => $userRetails]);
-    }
-
-    if($format == 'obj'){
-        return ($userRetailsObj) ?? Retail::whereIn('id', array_keys($userRetails))->get();
-    }
-    if($format == "id"){
-        return array_keys($userRetails);
-    }
-
-    return $userRetails;
-}
-
-
-/**
- * @param string $format: "array", "obj" or "id".
- */
-function getBranches($format = 'array')
-{
-    $userBranches = session('user_branches');
-
-    if(!$userBranches){
-        $userBranchesObj = RetailBranch::getUserBranches();
-        $userBranches = collectToArray($userBranchesObj, 'id', 'name');
-        session(['user_branches' => $userBranches]);
-    }
-
-    if($format == 'obj'){
-        return ($userBranchesObj) ?? RetailBranch::whereIn('id', array_keys($userBranches))->get();
-    }
-    if($format == "id"){
-        return array_keys($userBranches);
-    }
-
-    return $userBranches;
-}
-
-
-/**
- * @param string $format: "array", "obj" or "id".
- */
-function getAdvertisers($format = 'array')
-{
-    $userAdvertisers = session('user_advertisers');
-
-    if(!$userAdvertisers){
-        $userAdvertisersObj = Advertiser::getUserAdvertisers();
-        $userAdvertisers = collectToArray($userAdvertisersObj, 'id', 'name');
-        session(['user_advertisers' => $userAdvertisers]);
-    }
-
-    if($format == 'obj'){
-        return ($userAdvertisersObj) ?? Advertiser::whereIn('id', array_keys($userAdvertisers))->get();
-    }
-    if($format == "id"){
-        return array_keys($userAdvertisers);
-    }
-
-    return $userAdvertisers;
-}
-
-function getAdvLineItems($format = "array")
-{
-    $userAdvLines = session('user_adv_lines');
-
-    if(!$userAdvLines){
-        $userAdvLines = LineItem::select('id', 'name')->whereIn('advertiser_id', getAdvertisers('id'))->get();
-        $userAdvLines = collectToArray($userAdvLines, 'id', 'name');
-        session(['user_adv_lines' => $userAdvLines]);
-    }
-
-    return $userAdvLines;
 }
 
 

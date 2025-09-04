@@ -24,10 +24,15 @@ class PostFetch extends Command
         foreach($sources as $source) 
         {   
             echo "\n$source->name \n";
-            
+            $postFetchService = new PostFetchService( $source );
+            $sourceQueue = SourceQueue::find(3);
+            $postFetchService->getPostData( $sourceQueue->id );
+            dd("FIM");
             try
-            {
-                $postNew = PostFetchService::fetchNewPost( $source );
+            {   
+                $postFetchService = new PostFetchService( $source );
+
+                $postNew = $postFetchService->fetchNewPost();
                 echo count($postNew);
 
                 foreach( $postNew as $postData )
@@ -38,23 +43,21 @@ class PostFetch extends Command
                     if( $sourceQueue ) 
                     {
                         echo "OK - ";
-                        PostFetchService::getPostData( $sourceQueue->id );
+                        $postFetchService->getPostData( $sourceQueue->id );
                         echo "postData OK \n";
                     } else {
                         echo "Já Existe! \n";
                     }
                 }
+                dd("FIM");
             }
             catch(\Exception $err)
             {
-                echo("Error PostFetch: ".errorMessage($err));
+                echo("Error PostFetch: " . errorMessage($err) . "\n\n");
             }
         }
         
         echo "\n";
-
-        return true;
     }
 
-    
 }

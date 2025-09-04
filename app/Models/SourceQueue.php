@@ -10,7 +10,8 @@ class SourceQueue extends Model
 
     protected $casts = [
         'doc'       => 'object',
-        'post_data' => 'object',
+        'post_data1' => 'object',
+        'post_data2' => 'object',
     ];
 
     CONST STATUS_DONE       = 2;
@@ -49,10 +50,10 @@ class SourceQueue extends Model
 
         $sourceQueue = new SourceQueue();
         
-        $sourceQueue->source_id = $source->id;
-        $sourceQueue->post_id   = $postData->id;
-        $sourceQueue->endpoint  = $postData->endpoint;
-        $sourceQueue->doc       = $postData->data;
+        $sourceQueue->source_id  = $source->id;
+        $sourceQueue->post_id    = $postData->id;
+        $sourceQueue->endpoint   = $postData->endpoint;
+        $sourceQueue->post_data1 = $postData->data;
 
         $sourceQueue->save();
 
