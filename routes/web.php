@@ -32,6 +32,11 @@ Route::prefix('website')->middleware('auth')->group( function()
     Route::get('edit/{id?}',[Websites::class, 'edit'])->name('website-edit');
     Route::post('store',[Websites::class,'store'])->name('website-store');
 });
+Route::prefix('posts')->middleware('auth')->group( function()
+{
+    Route::get('list',[Websites::class, 'postsList'])->name('posts');
+    Route::post('store',[Websites::class,'postsStore'])->name('posts-store');
+});
 
 # Admin
 Route::prefix('source')->middleware('auth')->group( function()
@@ -41,6 +46,12 @@ Route::prefix('source')->middleware('auth')->group( function()
     Route::post('store',[Sources::class,'store'])->name('source-store');
 });
 
+Route::prefix('queue')->middleware('auth')->group( function()
+{
+    Route::get('list',[Sources::class, 'queueList'])->name('queue');
+    Route::post('store',[Sources::class,'queueStore'])->name('queue-store');
+});
+
 Route::prefix('category')->middleware('auth')->group( function()
 {
     Route::get('list',[Categories::class, 'index'])->name('category');
@@ -48,12 +59,11 @@ Route::prefix('category')->middleware('auth')->group( function()
     Route::post('store',[Categories::class,'store'])->name('category-store');
 });
 
-
-
 # Report
 Route::prefix('report')->middleware('auth')->group( function()
 {
-    Route::get('campaign',[Reports::class, 'campaign'])->name('report_campaign');
+    Route::get('posts',[Reports::class, 'posts'])->name('report_post');
+    Route::get('ads',[Reports::class, 'ads'])->name('report_ads');
 });
 
 # User

@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Category extends Model
+class WebsitePost extends Model
 {
-    public $table = 'categories';
+    public $table = 'websites_posts';
 
     protected $casts = [
         'doc' => 'object',
@@ -19,6 +19,14 @@ class Category extends Model
 
     ####################
     ### RELATIONSHIP ###
+
+    public function Website() {
+        return $this->belongsTo(Website::class, 'website_id', 'id');
+    }
+
+    public function Source() {
+        return $this->belongsTo(Source::class, 'source_id', 'id');
+    }
 
     ###############
     ### METHODS ###

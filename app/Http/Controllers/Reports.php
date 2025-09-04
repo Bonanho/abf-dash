@@ -2,16 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ReportCampaign;
+use App\Models\FinIncome;
 use Illuminate\Http\Request;
+
+use App\Models\WebsitePost;
 
 class Reports extends Controller
 {
-    public function campaign()
+    public function posts()
     {
-        $reports = ReportCampaign::all();
+        $reports = WebsitePost::all();
 
-        return view('report.index', compact('reports'));
+        return view('report.posts', compact('reports'));
+    }
+
+    public function ads()
+    {
+        $reports = FinIncome::all();
+
+        return view('report.ads', compact('reports'));
     }
 
 }

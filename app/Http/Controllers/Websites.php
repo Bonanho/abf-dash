@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 
 use App\Models\Website;
 use App\Models\Company;
-use App\Models\Category;
+use App\Models\AuxCategory;
+use App\Models\WebsitePost;
 
 class Websites extends Controller
 {
@@ -21,7 +22,7 @@ class Websites extends Controller
     {
         $website = Website::find( codeDecrypt($websiteId) );
         $companies = Company::all()->pluck('name', 'id');
-        $categories = Category::all()->pluck('name', 'id');
+        $categories = AuxCategory::all()->pluck('name', 'id');
 
         return view('website.edit', compact('website', 'companies', 'categories'));
     }
@@ -53,6 +54,23 @@ class Websites extends Controller
             return redirect()->back();
         }
 
+    }
+
+    ################
+    ## Posts
+
+    public function postsList()
+    {
+        $posts = WebsitePost::all();
+
+        return view('website.posts', compact('posts'));
+    }
+
+    public function postsStore( Request $request )
+    {
+        $posts = WebsitePost::all();
+
+        return view('website.posts', compact('posts'));
     }
 
 }

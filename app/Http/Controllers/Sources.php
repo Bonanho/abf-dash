@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Source;
-use App\Models\Category;
+use App\Models\AuxCategory;
+use App\Models\SourceQueue;
 
 class Sources extends Controller
 {
@@ -19,7 +20,7 @@ class Sources extends Controller
     public function edit( $sourceId = null )
     {
         $source = Source::find( codeDecrypt($sourceId) );
-        $categories = Category::all()->pluck('name', 'id');
+        $categories = AuxCategory::all()->pluck('name', 'id');
 
         return view('source.edit', compact('source', 'categories'));
     }
@@ -50,6 +51,23 @@ class Sources extends Controller
             return redirect()->back();
         }
 
+    }
+
+    ################
+    ## Fila de posts
+
+    public function queueList()
+    {
+        $posts = SourceQueue::all();
+
+        return view('source.queue', compact('posts'));
+    }
+
+    public function queueStore( Request $request )
+    {
+        $posts = SourceQueue::all();
+
+        return view('source.queue', compact('posts'));
     }
 
 }

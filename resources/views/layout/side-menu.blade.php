@@ -3,8 +3,10 @@
 
     $dashboard = (strpos($uri, 'dashboard')) ? 'active' : '';
     $website   = (strpos($uri, 'website')) ? 'active' : '';
-    $source    = (strpos($uri, 'source')) ? 'active' : '';
+    $posts     = (strpos($uri, 'posts')) ? 'active' : '';
     $category  = (strpos($uri, 'category')) ? 'active' : '';
+    $source    = (strpos($uri, 'source')) ? 'active' : '';
+    $queue     = (strpos($uri, 'queue')) ? 'active' : '';
 @endphp
 
 <nav class="sidebar sidebar-dark sidebar-fixed border-end" id="sidebar">
@@ -22,6 +24,7 @@
         <button class="btn-close d-lg-none" type="button" data-coreui-dismiss="offcanvas" data-coreui-theme="dark" aria-label="Close" onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()"></button>
     </div>
     <ul class="sidebar-nav" data-coreui="navigation" data-simplebar="">
+
         <li class="nav-item">
             <a class="nav-link {{ $dashboard }}" href="{{route('dashboard')}}">
             <svg class="nav-icon">
@@ -30,6 +33,7 @@
                 Dashboard
             </a>
         </li>
+
         <li class="nav-divider"></li>
 
         <li class="nav-title mt-1">Websites</li>
@@ -41,8 +45,24 @@
                 Websites
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link {{ $posts }}" href="{{route('posts')}}">
+                <svg class="nav-icon">
+                    <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-basket"></use>
+                </svg>
+                Posts
+            </a>
+        </li>
 
         <li class="nav-title mt-1">Admin</li>
+        <li class="nav-item">
+            <a class="nav-link {{ $category }}" href="{{route('category')}}">
+                <svg class="nav-icon">
+                    <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-tag"></use>
+                </svg>
+                Categorias
+            </a>
+        </li>
         <li class="nav-item">
             <a class="nav-link {{ $source }}" href="{{route('source')}}">
                 <svg class="nav-icon">
@@ -52,24 +72,32 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {{ $category }}" href="{{route('category')}}">
+            <a class="nav-link {{ $queue }}" href="{{route('queue')}}">
                 <svg class="nav-icon">
-                    <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-tag"></use>
+                    <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-basket"></use>
                 </svg>
-                Categorias
+                Fila Posts
             </a>
         </li>
         
-        {{-- <li class="nav-divider"></li>
+        <li class="nav-divider"></li>
         <li class="nav-title mt-1">Relatórios</li>
         <li class="nav-item">
-            <a class="nav-link" href="{{route('report_website')}}">
+            <a class="nav-link" href="{{route('report_post')}}">
                 <svg class="nav-icon">
                     <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-chart-pie"></use>
                 </svg>
-                Relatórios
+                Posts
             </a>
-        </li> --}}
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{route('report_ads')}}">
+                <svg class="nav-icon">
+                    <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-chart-pie"></use>
+                </svg>
+                ADS
+            </a>
+        </li>
                 
     </ul>
     <div class="sidebar-footer border-top d-none d-md-flex">

@@ -19,17 +19,14 @@ class Source extends Model
 
     ####################
     ### RELATIONSHIP ###
+    
     public function Company() {
         return $this->belongsTo(Company::class, 'company_id', 'id');
     }
 
     public function Category() {
-        return $this->hasOne(Category::class, 'id', 'category_id');
+        return $this->hasOne(AuxCategory::class, 'id', 'category_id');
     }
-
-    // public function Sources() {
-    //     return $this->hasMany(WebsiteSource::class, 'cluster_id', 'id');
-    // }
 
     ###############
     ### METHODS ###
@@ -38,9 +35,10 @@ class Source extends Model
         return self::STATUS[$this->status_id];
     }
 
-    public function getNetworks() 
+    public static function getSourcesFetch()
     {
-        $networks = $this->networks;
-        dd($this->networks);
+        $sources = self::where("status_id",self::STATUS_ACTIVE)->get();
+
+        return $sources;
     }
 }

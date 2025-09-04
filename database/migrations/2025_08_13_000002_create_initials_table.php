@@ -1,0 +1,157 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('companies', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->json('doc')->nullable();
+            $table->tinyinteger('status_id')->default(1);
+            $table->timestamps();
+        });
+
+        Schema::create('websites', function (Blueprint $table) {
+            $table->id();
+            $table->integer('company_id');
+            $table->integer('category_id');
+            $table->string('name');
+            $table->string('url');
+            $table->json('config')->nullable();
+            $table->json('doc')->nullable();
+            $table->tinyinteger('status_id')->default(1);
+            $table->timestamps();
+        });
+
+        Schema::create('websites_source', function (Blueprint $table) {
+            $table->id();
+            $table->integer('website_id');
+            $table->integer('source_id');
+            $table->json('doc')->nullable();
+            $table->tinyinteger('status_id')->default(1);
+            $table->timestamps();
+        });
+
+        Schema::create('websites_posts', function (Blueprint $table) {
+            $table->id();
+            $table->integer('website_id');
+            $table->integer('source_id');
+            $table->integer('post_id');
+            $table->string('post_title');
+            $table->string('post_description');
+            $table->string('post_content');
+            $table->string('post_image');
+            $table->string('post_image_caption');
+            $table->string('post_image_category');
+            $table->string('url_original');
+            $table->dateTime('date');
+            $table->tinyinteger('status_id')->default(0);
+            $table->timestamps();
+        });
+
+        
+
+        Schema::create('aux_categories', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->json('doc')->nullable();
+            $table->tinyinteger('status_id')->default(1);
+            $table->timestamps();
+        });
+
+        Schema::create('aux_networks', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->json('doc')->nullable();
+            $table->tinyinteger('status_id')->default(1);
+            $table->timestamps();
+        });
+
+
+
+        Schema::create('sources', function (Blueprint $table) {
+            $table->id();
+            $table->integer('category_id');
+            $table->string('name');
+            $table->string('url');
+            $table->json('doc')->nullable();
+            $table->tinyinteger('status_id')->default(1);
+            $table->timestamps();
+        });
+
+        Schema::create('sources_queue', function (Blueprint $table) {
+            $table->id();
+            $table->integer('source_id');
+            $table->integer('post_id');
+            $table->string('endpoint');
+            $table->tinyinteger('status_id')->default(0);
+            $table->timestamps();
+        });
+
+
+
+        Schema::create('adtags', function (Blueprint $table) {
+            $table->id();
+            $table->integer('website_id');
+            $table->string('name');
+            $table->json('doc')->nullable(); 
+            $table->tinyinteger('status_id')->default(1);
+            $table->timestamps();
+        });
+        Schema::create('adtags_adunits', function (Blueprint $table) {
+            $table->id();
+            $table->integer('website_id');
+            $table->integer('adtag_id');
+            $table->integer('network_id');
+            $table->string('name');
+            $table->json('doc')->nullable(); 
+            $table->tinyinteger('status_id')->default(1);
+            $table->timestamps();
+        });
+
+        Schema::create('fin_deliveries', function (Blueprint $table) {
+            $table->id();
+            $table->date('date');
+            $table->integer('network_id');
+            $table->string('adunit');
+            $table->string('prints');
+            $table->string('revenue');
+            $table->tinyinteger('status_id')->default(0);
+            $table->timestamps();
+        });
+        
+        Schema::create('fin_incomes', function (Blueprint $table) {
+            $table->id();
+            $table->date('date');
+            $table->integer('website_id');
+            $table->integer('network_id');
+            $table->string('prints');
+            $table->string('revenue');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('companies');
+        Schema::dropIfExists('websites');
+        Schema::dropIfExists('websites_source');
+        Schema::dropIfExists('websites_posts');
+
+        Schema::dropIfExists('aux_categories');
+        Schema::dropIfExists('aux_networks');
+
+        Schema::dropIfExists('sources');
+        Schema::dropIfExists('sources_queue');
+
+        Schema::dropIfExists('adtags');
+        Schema::dropIfExists('adtags_adunits');
+        Schema::dropIfExists('fin_deliveries');
+        Schema::dropIfExists('fin_incomes');
+    }
+};

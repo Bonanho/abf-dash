@@ -4,22 +4,21 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Models\Category;
+use App\Models\AuxCategory;
 class Categories extends Controller
 {
         public function index()
     {
-        $categories = Category::all();
+        $categories = AuxCategory::all();
 
         return view('category.index', compact('categories'));
     }
 
     public function edit( $categoryId = null )
     {
-        $category = Category::find( codeDecrypt($categoryId) );
-        $categories = Category::all()->pluck('name', 'id');
+        $category = AuxCategory::find( codeDecrypt($categoryId) );
 
-        return view('category.edit', compact('category', 'categories'));
+        return view('category.edit', compact('category'));
     }
 
     public function store( Request $request )
@@ -27,9 +26,9 @@ class Categories extends Controller
         try
         {
             if( $request->id ){
-                $category = Category::find( codeDecrypt($request->id) );
+                $category = AuxCategory::find( codeDecrypt($request->id) );
             } else {
-                $category = new Category();
+                $category = new AuxCategory();
             }
 
             $category->name        = $request->name;

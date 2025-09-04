@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Network extends Model
+class FinDelivery extends Model
 {
-    public $table = 'networks';
+    public $table = 'fin_deliveries';
 
     protected $casts = [
         'doc' => 'object',
@@ -14,6 +14,10 @@ class Network extends Model
 
     ####################
     ### RELATIONSHIP ###
+    
+    public function Network() {
+        return $this->belongsTo(AuxNetwork::class, 'network_id', 'id');
+    }
 
     ###############
     ### METHODS ###

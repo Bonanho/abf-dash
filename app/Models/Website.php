@@ -20,12 +20,13 @@ class Website extends Model
 
     ####################
     ### RELATIONSHIP ###
+    
     public function Company() {
         return $this->belongsTo(Company::class, 'company_id', 'id');
     }
 
     public function Category() {
-        return $this->hasOne(Category::class, 'id', 'category_id');
+        return $this->hasOne(AuxCategory::class, 'id', 'category_id');
     }
 
     // public function Sources() {
