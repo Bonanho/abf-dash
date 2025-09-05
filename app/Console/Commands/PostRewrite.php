@@ -6,23 +6,10 @@ use Illuminate\Console\Command;
 
 class PostRewrite extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'app:post-rewrite';
+    protected $signature = 'post:rewrite';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Command description';
+    protected $description = 'Pega um registro da fila e reescreve a matéria para um website';
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
         //

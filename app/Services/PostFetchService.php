@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\SourceQueue;
+use App\Models\SourcePost;
 
 class PostFetchService 
 {
     public $source;
-    public $sourceQueue;
+    public $sourcePost;
     public $apiUrlBase;
     public $apiUrlBasePost;
     public $apiUrlBaseMedia;
@@ -80,36 +80,36 @@ class PostFetchService
 
     #####################
     ### GET POST DATA ###
-    public function getPostData( $sourceQueueId ) 
+    public function getPostData( $sourcePostId ) 
     {
-        $this->sourceQueue = SourceQueue::find($sourceQueueId);
-        // if( $this->sourceQueue->status_id != SourceQueue::STATUS_PENDING ){
+        $this->sourcePost = SourcePost::find($sourcePostId);
+        // if( $this->sourcePost->status_id != SourcePost::STATUS_PENDING ){
         //     return false;
         // }
 
-        $this->sourceQueue->setStatus( SourceQueue::STATUS_PROCESSING );
+        $this->sourcePost->setStatus( SourcePost::STATUS_PROCESSING );
 
         try
         {
-            $postData = $this->getWp( $this->sourceQueue->endpoint );
+            $postData = $this->getWp( $this->sourcePost->endpoint );
 
-            $this->sourceQueue->status_id  = SourceQueue::STATUS_DONE;
-            $this->sourceQueue->post_data2 = $postData;
-            $this->sourceQueue->save();
+            $this->sourcePost->status_id  = SourcePost::STATUS_DONE;
+            $this->sourcePost->post_data2 = $postData;
+            $this->sourcePost->save();
             
             $doc = $this->defineResultObj( $postData );
-            $this->sourceQueue->doc = $doc;
-            $this->sourceQueue->save();
+            $this->sourcePost->doc = $doc;
+            $this->sourcePost->save();
             // $result = $this->filterWords( $resultData );
             return true;
         }
         catch (\Throwable $e) 
         {
-            $this->sourceQueue->setStatus( SourceQueue::STATUS_ERROR );
-            $this->sourceQueue->post_data2 = $e->getMessage(); // $e->serialize($e)
-            $this->sourceQueue->save();
+            $this->sourcePost->setStatus( SourcePost::STATUS_ERROR );
+            $this->sourcePost->post_data2 = $e->getMessage(); // $e->serialize($e)
+            $this->sourcePost->save();
 
-            throw new \Exception("Erro ao buscar no source [{$this->sourceQueue->endpoint}]", 0, $e);
+            throw new \Exception("Erro ao buscar no source [{$this->sourcePost->endpoint}]", 0, $e);
         }
     }
 
@@ -150,7 +150,7 @@ class PostFetchService
 
     private function getImage() 
     {
-        $post = $this->sourceQueue->post_data2;
+        $post = $this->sourcePost->post_data2;
 
         $imageApi = $this->getWp( $this->apiUrlBaseMedia . $post->featured_media );
 
@@ -160,8 +160,10 @@ class PostFetchService
             $image = $imageApi->media_details->sizes->full->source_url;
         } elseif (!empty($imageApi->source_url)) {
             $image = $imageApi->source_url;
-        } else {
+        } elseif (!empty($imageApi->guid->rendered)) {
             $image = strip_tags($imageApi->guid->rendered);
+        } else {
+            $image = "";
         }
         $result["url"] = $image;
         $result["caption"] = $imageApi->alt_text ?? strip_tags($imageApi->caption->rendered);
@@ -171,7 +173,7 @@ class PostFetchService
 
     private function getCategory() 
     {
-        $post = $this->sourceQueue->post_data2;
+        $post = $this->sourcePost->post_data2;
 
         $category = $this->getWp( $this->apiUrlBaseCategory .$post->categories[0])->name;
 

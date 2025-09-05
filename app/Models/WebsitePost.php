@@ -9,6 +9,8 @@ class WebsitePost extends Model
     public $table = 'websites_posts';
 
     protected $casts = [
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'updated_at' => 'datetime:Y-m-d H:i:s',
         'doc' => 'object',
     ];
 

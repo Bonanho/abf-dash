@@ -9,6 +9,8 @@ class AuxCategory extends Model
     public $table = 'aux_categories';
 
     protected $casts = [
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'updated_at' => 'datetime:Y-m-d H:i:s',
         'doc' => 'object',
     ];
 

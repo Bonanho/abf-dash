@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Models\Source;
 use App\Models\AuxCategory;
-use App\Models\SourceQueue;
+use App\Models\SourcePost;
 
 class Sources extends Controller
 {
@@ -58,14 +58,14 @@ class Sources extends Controller
 
     public function queueList()
     {
-        $posts = SourceQueue::all();
+        $posts = SourcePost::all();
 
         return view('source.queue', compact('posts'));
     }
 
     public function queueStore( Request $request )
     {
-        $posts = SourceQueue::all();
+        $posts = SourcePost::all();
 
         return view('source.queue', compact('posts'));
     }

@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class SourceQueue extends Model
+class SourcePost extends Model
 {
-    public $table = 'sources_queue';
+    public $table = 'sources_posts';
 
     protected $casts = [
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'updated_at' => 'datetime:Y-m-d H:i:s',
         'doc'       => 'object',
         'post_data1' => 'object',
         'post_data2' => 'object',
@@ -42,22 +44,22 @@ class SourceQueue extends Model
 
     public static function register( $source, $postData )
     {
-        $queueExists = SourceQueue::where("source_id", $source->id)->where("post_id",$postData->id)->count();
+        $queueExists = SourcePost::where("source_id", $source->id)->where("post_id",$postData->id)->count();
 
         if( $queueExists ){
             return null;
         }
 
-        $sourceQueue = new SourceQueue();
+        $sourcePost = new SourcePost();
         
-        $sourceQueue->source_id  = $source->id;
-        $sourceQueue->post_id    = $postData->id;
-        $sourceQueue->endpoint   = $postData->endpoint;
-        $sourceQueue->post_data1 = $postData->data;
+        $sourcePost->source_id  = $source->id;
+        $sourcePost->post_id    = $postData->id;
+        $sourcePost->endpoint   = $postData->endpoint;
+        $sourcePost->post_data1 = $postData->data;
 
-        $sourceQueue->save();
+        $sourcePost->save();
 
-        return $sourceQueue;
+        return $sourcePost;
     }
 
 }

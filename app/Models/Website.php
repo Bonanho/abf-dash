@@ -9,6 +9,8 @@ class Website extends Model
     public $table = 'websites';
 
     protected $casts = [
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'updated_at' => 'datetime:Y-m-d H:i:s',
         'config' => 'object',
         'doc'    => 'object',
     ];
@@ -29,9 +31,9 @@ class Website extends Model
         return $this->hasOne(AuxCategory::class, 'id', 'category_id');
     }
 
-    // public function Sources() {
-    //     return $this->hasMany(WebsiteSource::class, 'cluster_id', 'id');
-    // }
+    public function Sources() {
+        return $this->hasMany(WebsiteSource::class, 'website_id', 'id');
+    }
 
     ###############
     ### METHODS ###

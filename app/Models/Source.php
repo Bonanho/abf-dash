@@ -9,6 +9,8 @@ class Source extends Model
     public $table = 'sources';
 
     protected $casts = [
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'updated_at' => 'datetime:Y-m-d H:i:s',
         'doc'    => 'object',
     ];
 
@@ -35,7 +37,7 @@ class Source extends Model
         return self::STATUS[$this->status_id];
     }
 
-    public static function getSourcesFetch()
+    public static function getSourcesToFetchPosts()
     {
         $sources = self::where("status_id",self::STATUS_ACTIVE)->get();
 

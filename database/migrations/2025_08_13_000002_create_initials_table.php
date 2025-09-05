@@ -28,7 +28,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('websites_source', function (Blueprint $table) {
+        Schema::create('websites_sources', function (Blueprint $table) {
             $table->id();
             $table->integer('website_id');
             $table->integer('source_id');
@@ -54,7 +54,15 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        
+        Schema::create('websites_posts_queue', function (Blueprint $table) {
+            $table->id();
+            $table->integer('website_id');
+            $table->integer('source_id');
+            $table->integer('source_post_id');
+            $table->json('doc')->nullable();
+            $table->tinyinteger('status_id')->default(0);
+            $table->timestamps();
+        });
 
         Schema::create('aux_categories', function (Blueprint $table) {
             $table->id();
@@ -84,7 +92,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('sources_queue', function (Blueprint $table) {
+        Schema::create('sources_posts', function (Blueprint $table) {
             $table->id();
             $table->integer('source_id');
             $table->integer('post_id');
@@ -150,7 +158,7 @@ return new class extends Migration
         Schema::dropIfExists('aux_networks');
 
         Schema::dropIfExists('sources');
-        Schema::dropIfExists('sources_queue');
+        Schema::dropIfExists('sources_posts');
 
         Schema::dropIfExists('adtags');
         Schema::dropIfExists('adtags_adunits');

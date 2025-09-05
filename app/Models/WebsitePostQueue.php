@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class AuxNetwork extends Model
+class WebsitePostQueue extends Model
 {
-    public $table = 'aux_networks';
+    public $table = 'websites_posts_queue';
 
     protected $casts = [
         'created_at' => 'datetime:Y-m-d H:i:s',
@@ -14,13 +14,21 @@ class AuxNetwork extends Model
         'doc' => 'object',
     ];
 
-    CONST STATUS_ACTIVE = 1;
+    CONST STATUS_DONE = 1;
     CONST STATUS_PENDING = 0;
-    CONST STATUS_INACTIVE = -1;
-    CONST STATUS = [1=>"Ativo", 0=>"Pendente", -1=>"Inativo"];
+    CONST STATUS_ERROR = -1;
+    CONST STATUS = [1=>"Concluido", 0=>"Pendente", -1=>"Erro"];
 
     ####################
     ### RELATIONSHIP ###
+
+    public function Website() {
+        return $this->belongsTo(Website::class, 'website_id', 'id');
+    }
+
+    public function Source() {
+        return $this->belongsTo(Source::class, 'source_id', 'id');
+    }
 
     ###############
     ### METHODS ###

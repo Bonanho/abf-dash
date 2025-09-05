@@ -6,23 +6,10 @@ use Illuminate\Console\Command;
 
 class PostPublish extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'app:post-publish';
+    protected $signature = 'post:publish';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Command description';
+    protected $description = 'Publica a matéria no website';
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
         //

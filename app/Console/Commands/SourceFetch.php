@@ -3,31 +3,29 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use DateTime;
 
 use App\Models\Source;
-use App\Models\SourceQueue;
+use App\Models\SourcePost;
 use App\Services\PostFetchService;
 
-class PostFetch extends Command
+class SourceFetch extends Command
 {
-    protected $signature = 'post:fetch';
+    protected $signature = 'source:fetch';
 
-    protected $description = 'Command description';
+    protected $description = 'Busca materias nos sites fonte e prepara os parametros';
 
     public function handle() 
     {
-        $printDate = (new \DateTime())->format('Y-m-d H');
-        $this->line("********** PostFetch - " . $printDate . " **********");
+        $printDate = (new DateTime())->format('Y-m-d H');
+        $this->line("********** SourceFetch - " . $printDate . " **********");
 
-        $sources = Source::getSourcesFetch();
+        $sources = Source::getSourcesToFetchPosts();
 
         foreach($sources as $source) 
         {   
             echo "\n$source->name \n";
-            $postFetchService = new PostFetchService( $source );
-            $sourceQueue = SourceQueue::find(3);
-            $postFetchService->getPostData( $sourceQueue->id );
-            dd("FIM");
+            
             try
             {   
                 $postFetchService = new PostFetchService( $source );
@@ -38,18 +36,18 @@ class PostFetch extends Command
                 foreach( $postNew as $postData )
                 {
                     echo "$postData->id = ";
-                    $sourceQueue = SourceQueue::register( $source, $postData);
+                    $sourcePost = SourcePost::register( $source, $postData);
 
-                    if( $sourceQueue ) 
+                    if( $sourcePost ) 
                     {
                         echo "OK - ";
-                        $postFetchService->getPostData( $sourceQueue->id );
+                        $postFetchService->getPostData( $sourcePost->id );
                         echo "postData OK \n";
                     } else {
                         echo "Já Existe! \n";
                     }
                 }
-                dd("FIM");
+                
             }
             catch(\Exception $err)
             {
@@ -57,7 +55,7 @@ class PostFetch extends Command
             }
         }
         
-        echo "\n";
+        $this->line("\n********** SourceFetch - FIM - " . $printDate . " **********\n");
     }
 
 }
