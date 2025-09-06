@@ -3,10 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use DateTime;
 
-use App\Models\User;
 use App\Models\AuxCategory;
 use App\Models\AuxNetwork;
 
@@ -56,10 +54,13 @@ class AbfSeeder extends Seeder
         ]);
 
         WebsiteSource::insert([
-            ['id'=>1, 'website_id'=>1, 'source_id'=>'1', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['id'=>1, 'website_id'=>1, 'source_id'=>'2', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['id'=>1, 'website_id'=>2, 'source_id'=>'1', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['id'=>1, 'website_id'=>2, 'source_id'=>'3', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>1, 'source_id'=>'1', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>1, 'source_id'=>'2', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>2, 'source_id'=>'1', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>2, 'source_id'=>'3', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>3, 'source_id'=>'1', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>2, 'source_id'=>'2', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>2, 'source_id'=>'3', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
         ]);
 
     }
