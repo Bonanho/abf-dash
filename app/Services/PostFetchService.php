@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Source;
 use App\Models\SourcePost;
 
 class PostFetchService 
@@ -25,6 +26,56 @@ class PostFetchService
 
     #####################
     ### GET NEW POSTS ###
+    public function fetchValidation()
+    {
+        // $data = $this->fetchNewPost();
+
+        $apiUrl = $this->apiUrlBasePost . "?per_page=1" ;
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $apiUrl,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+            CURLOPT_HTTPHEADER => [
+                'Accept: application/json',
+                'Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+                'Connection: keep-alive',
+                'Cache-Control: no-cache',
+                'Pragma: no-cache',
+                'DNT: 1',
+                'Upgrade-Insecure-Requests: 1',
+            ],
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 10,
+        ]);
+        
+        $response = curl_exec($ch);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        $data = json_decode($response);
+        
+        if( $data ) 
+        {
+            $this->source->status_id = Source::STATUS_ACTIVE;
+            $this->source->save();
+        }
+        else
+        {
+            $this->source->status_id = Source::STATUS_INVALID;
+            $this->source->type_id   = Source::TYPE_CUSTOM;
+            $this->source->doc       = "{'test-url':$apiUrl}";
+            $this->source->save();
+
+            echo "\n".$apiUrl."\n";
+        }
+        
+        return $this->source->status_id;
+    }
+
     public function fetchNewPost()
     {
         try
@@ -91,16 +142,18 @@ class PostFetchService
 
         try
         {
+            // **** Somente para testes e comparação ****
             $postData = $this->getWp( $this->sourcePost->endpoint );
 
-            $this->sourcePost->status_id  = SourcePost::STATUS_DONE;
             $this->sourcePost->post_data2 = $postData;
             $this->sourcePost->save();
-            
-            $doc = $this->defineResultObj( $postData );
+            // **** Somente para testes e comparação ****
+
+            $doc = $this->defineResultObj( $this->sourcePost->post_data ); // $postData
             $this->sourcePost->doc = $doc;
+            $this->sourcePost->status_id  = SourcePost::STATUS_DONE;
             $this->sourcePost->save();
-            // $result = $this->filterWords( $resultData );
+
             return true;
         }
         catch (\Throwable $e) 
@@ -120,15 +173,15 @@ class PostFetchService
 
         $imageData = $this->getImage();
 
-        $post->sourceId         = $this->source->id;
-        $post->post_id          = $postData->id;
-        $post->post_title       = $this->filterWords( $postData->title->rendered );
-        $post->post_description = $postData->yoast_head_json->description ?? strip_tags($postData->excerpt->rendered);
-        $post->post_content     = $this->formatContent( $postData->content->rendered );
-        $post->post_image       = $imageData->url;
-        $post->image_caption    = $imageData->caption;
-        $post->post_category    = $this->getCategory();
-        $post->url_original     = $postData->link;
+        $post->sourceId      = $this->source->id;
+        $post->post_id       = $postData->id;
+        $post->title         = $this->filterWords( $postData->title->rendered );
+        $post->description   = $postData->yoast_head_json->description ?? strip_tags($postData->excerpt->rendered);
+        $post->content       = $this->formatContent( $postData->content->rendered );
+        $post->image         = $imageData->url;
+        $post->image_caption = $imageData->caption;
+        $post->category      = $this->getCategory();
+        $post->url_original  = $postData->link;
 
         return $post;
     }

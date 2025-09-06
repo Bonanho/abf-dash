@@ -17,7 +17,7 @@ class SourceFetch extends Command
 
     public function handle() 
     {
-        $printDate = (new DateTime())->format('Y-m-d H');
+        $printDate = (new DateTime())->format('Y-m-d H:i:s');
         $this->line("********** SourceFetch - " . $printDate . " **********");
 
         $sources = Source::getSourcesToFetchPosts();
@@ -31,13 +31,13 @@ class SourceFetch extends Command
                 $postFetchService = new PostFetchService( $source );
 
                 $postNew = $postFetchService->fetchNewPost();
-                echo count($postNew);
+                echo "Qtd Posts: " . count($postNew)." - ";
 
                 foreach( $postNew as $postData )
                 {
-                    echo "$postData->id = ";
+                    echo "PostOriginId: $postData->id - Register: ";
                     $sourcePost = SourcePost::register( $source, $postData);
-
+                    
                     if( $sourcePost ) 
                     {
                         echo "OK - ";
@@ -55,6 +55,7 @@ class SourceFetch extends Command
             }
         }
         
+        $printDate = (new DateTime())->format('Y-m-d H:i:s');
         $this->line("\n********** SourceFetch - FIM - " . $printDate . " **********\n");
     }
 

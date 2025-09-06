@@ -17,10 +17,9 @@ class PostQueue extends Command
 
     public function handle()
     {
-        $printDate = (new DateTime())->format('Y-m-d H');
+        $printDate = (new DateTime())->format('Y-m-d H:i:s');
         $this->line("********** PostQueue - " . $printDate . " **********");
 
-        
         $websites = Website::where("status_id",Website::STATUS_ACTIVE)->get();
         
         # Websites
@@ -72,6 +71,7 @@ class PostQueue extends Command
             
         }
 
+        $printDate = (new DateTime())->format('Y-m-d H:i:s');
         $this->line("\n********** PostQueue - FIM - " . $printDate . " **********\n");
     }
 }

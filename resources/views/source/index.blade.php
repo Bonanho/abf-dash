@@ -6,13 +6,14 @@
             <x-app.btn-icon type="entity" text="Cadastrar Fonte" :href="route('source-edit')"></x-app.btn-icon>
         </x-app.page-header>
 
-        <x-app.table :titles="['Id','Nome','URL','Categoria','Status']">
+        <x-app.table :titles="['Id','Nome','URL','Categoria','Tipo', 'Status']">
             @foreach( $sources as $source)
                 <tr>
                     <td>{{$source->id}}</td>
                     <td>{{$source->name}}</td>
                     <td>{{$source->url}}</td>
                     <td>{{$source->Category->name}}</td>
+                    <td>{{$source->getType()}}</td>
                     <td>{{$source->getStatus()}}</td>
                     <td>
                         <x-app.icon type="edit" :href="route('source-edit',codeEncrypt($source->id))"></x-app.icon>

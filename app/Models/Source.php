@@ -14,10 +14,15 @@ class Source extends Model
         'doc'    => 'object',
     ];
 
-    CONST STATUS_ACTIVE = 1;
-    CONST STATUS_PENDING = 0;
+    CONST STATUS_ACTIVE   = 1;
+    CONST STATUS_PENDING  = 0;
     CONST STATUS_INACTIVE = -1;
-    CONST STATUS = [1=>"Ativo", 0=>"Pendente", -1=>"Inativo"];
+    CONST STATUS_INVALID  = -2;
+    CONST STATUS = [1=>"Ativo", 0=>"Pendente", -1=>"Inativo", -2=>"Invalido"];
+
+    CONST TYPE_WP = 1;
+    CONST TYPE_CUSTOM = 2;
+    CONST TYPES = [1=>"WP", 2=>"Custom"];
 
     ####################
     ### RELATIONSHIP ###
@@ -37,9 +42,15 @@ class Source extends Model
         return self::STATUS[$this->status_id];
     }
 
+    public function getType() {
+        return self::TYPES[$this->type_id];
+    }
+
     public static function getSourcesToFetchPosts()
     {
-        $sources = self::where("status_id",self::STATUS_ACTIVE)->get();
+        $sources = self::where("status_id",self::STATUS_ACTIVE)
+        // ->where("id",33)
+        ->get();
 
         return $sources;
     }

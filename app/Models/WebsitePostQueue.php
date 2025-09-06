@@ -15,9 +15,10 @@ class WebsitePostQueue extends Model
     ];
 
     CONST STATUS_DONE = 1;
+    CONST STATUS_PROCESSING = 11;
     CONST STATUS_PENDING = 0;
     CONST STATUS_ERROR = -1;
-    CONST STATUS = [1=>"Concluido", 0=>"Pendente", -1=>"Erro"];
+    CONST STATUS = [1=>"Concluido", 0=>"Pendente", -1=>"Erro", 11=>"Processando"];
 
     ####################
     ### RELATIONSHIP ###
@@ -30,10 +31,20 @@ class WebsitePostQueue extends Model
         return $this->belongsTo(Source::class, 'source_id', 'id');
     }
 
+    public function SourcePost() {
+        return $this->belongsTo(SourcePost::class, 'source_post_id', 'id');
+    }
+
     ###############
     ### METHODS ###
     
     public function getStatus() {
         return self::STATUS[$this->status_id];
+    }
+
+    public function setStatus( $statusId ) {
+        $this->status_id = $statusId;
+        $this->save();
+        return true;
     }
 }

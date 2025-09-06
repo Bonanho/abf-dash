@@ -12,7 +12,7 @@ class SourcePost extends Model
         'created_at' => 'datetime:Y-m-d H:i:s',
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'doc'       => 'object',
-        'post_data1' => 'object',
+        'post_data' => 'object',
         'post_data2' => 'object',
     ];
 
@@ -44,7 +44,7 @@ class SourcePost extends Model
 
     public static function register( $source, $postData )
     {
-        $queueExists = SourcePost::where("source_id", $source->id)->where("post_id",$postData->id)->count();
+        $queueExists = SourcePost::where("source_id", $source->id)->where("post_origin_id",$postData->id)->count();
 
         if( $queueExists ){
             return null;
@@ -52,10 +52,10 @@ class SourcePost extends Model
 
         $sourcePost = new SourcePost();
         
-        $sourcePost->source_id  = $source->id;
-        $sourcePost->post_id    = $postData->id;
-        $sourcePost->endpoint   = $postData->endpoint;
-        $sourcePost->post_data1 = $postData->data;
+        $sourcePost->source_id      = $source->id;
+        $sourcePost->post_origin_id = $postData->id;
+        $sourcePost->endpoint       = $postData->endpoint;
+        $sourcePost->post_data      = $postData->data;
 
         $sourcePost->save();
 

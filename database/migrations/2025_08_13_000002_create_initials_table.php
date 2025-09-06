@@ -37,32 +37,34 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('websites_posts', function (Blueprint $table) {
-            $table->id();
+        Schema::create('websites_posts_queue', function (Blueprint $table) {
+            $table->bigIncrements("id");
             $table->integer('website_id');
             $table->integer('source_id');
-            $table->integer('post_id');
+            $table->bigInteger('source_post_id');
+            $table->json('doc')->nullable();
+            $table->tinyinteger('status_id')->default(0);
+            $table->timestamps();
+        });
+
+        Schema::create('websites_posts', function (Blueprint $table) {
+            $table->bigIncrements("id");
+            $table->bigInteger('website_post_queue_id');
+            $table->integer('website_id');
+            $table->integer('source_id');
+            $table->bigInteger('source_post_id');
             $table->string('post_title');
             $table->string('post_description');
             $table->string('post_content');
             $table->string('post_image');
             $table->string('post_image_caption');
-            $table->string('post_image_category');
+            $table->string('post_category');
             $table->string('url_original');
-            $table->dateTime('date');
             $table->tinyinteger('status_id')->default(0);
             $table->timestamps();
         });
 
-        Schema::create('websites_posts_queue', function (Blueprint $table) {
-            $table->id();
-            $table->integer('website_id');
-            $table->integer('source_id');
-            $table->integer('source_post_id');
-            $table->json('doc')->nullable();
-            $table->tinyinteger('status_id')->default(0);
-            $table->timestamps();
-        });
+        
 
         Schema::create('aux_categories', function (Blueprint $table) {
             $table->id();
@@ -87,19 +89,20 @@ return new class extends Migration
             $table->integer('category_id');
             $table->string('name');
             $table->string('url');
+            $table->integer('type_id')->default(1);
             $table->json('doc')->nullable();
-            $table->tinyinteger('status_id')->default(1);
+            $table->tinyinteger('status_id')->default(0);
             $table->timestamps();
         });
 
         Schema::create('sources_posts', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements("id");
             $table->integer('source_id');
-            $table->integer('post_id');
+            $table->bigInteger('post_origin_id');
             $table->string('endpoint');
             $table->json('doc')->nullable(); 
-            $table->json('post_data1')->nullable(); 
-            $table->json('post_data2')->nullable(); 
+            $table->json('post_data')->nullable(); 
+            $table->json('post_data2')->nullable(); // remover depois
             $table->tinyinteger('status_id')->default(0);
             $table->timestamps();
         });
@@ -151,7 +154,8 @@ return new class extends Migration
     {
         Schema::dropIfExists('companies');
         Schema::dropIfExists('websites');
-        Schema::dropIfExists('websites_source');
+        Schema::dropIfExists('websites_sources');
+        Schema::dropIfExists('websites_posts_queue');
         Schema::dropIfExists('websites_posts');
 
         Schema::dropIfExists('aux_categories');
