@@ -55,7 +55,7 @@ return new class extends Migration
             $table->bigInteger('source_post_id');
             $table->string('post_title');
             $table->string('post_description');
-            $table->string('post_content');
+            $table->longText('post_content');
             $table->string('post_image');
             $table->string('post_image_caption');
             $table->string('post_category');

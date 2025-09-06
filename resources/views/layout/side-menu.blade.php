@@ -50,7 +50,15 @@
                 <svg class="nav-icon">
                     <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-basket"></use>
                 </svg>
-                Posts
+                Websites Posts
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ $posts }}" href="{{route('posts')}}">
+                <svg class="nav-icon">
+                    <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-basket"></use>
+                </svg>
+                Fila Posts
             </a>
         </li>
 
@@ -76,7 +84,7 @@
                 <svg class="nav-icon">
                     <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-basket"></use>
                 </svg>
-                Fila Posts
+                Fontes Posts
             </a>
         </li>
         
@@ -90,14 +98,14 @@
                 Posts
             </a>
         </li>
-        <li class="nav-item">
+        {{-- <li class="nav-item">
             <a class="nav-link" href="{{route('report_ads')}}">
                 <svg class="nav-icon">
                     <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-chart-pie"></use>
                 </svg>
                 ADS
             </a>
-        </li>
+        </li> --}}
                 
     </ul>
     <div class="sidebar-footer border-top d-none d-md-flex">

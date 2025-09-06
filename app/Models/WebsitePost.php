@@ -16,8 +16,8 @@ class WebsitePost extends Model
 
     CONST STATUS_ACTIVE = 1;
     CONST STATUS_PENDING = 0;
-    CONST STATUS_INACTIVE = -1;
-    CONST STATUS = [1=>"Ativo", 0=>"Pendente", -1=>"Inativo"];
+    CONST STATUS_ERROR = -1;
+    CONST STATUS = [1=>"Ativo", 0=>"Pendente", -1=>"Erro"];
 
     ####################
     ### RELATIONSHIP ###

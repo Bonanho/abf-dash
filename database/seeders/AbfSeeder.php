@@ -15,7 +15,7 @@ use App\Models\Source;
 use App\Models\Website;
 use App\Models\WebsiteSource;
 
-class InitialSeeder extends Seeder
+class AbfSeeder extends Seeder
 {   
     public function run()
     {   
