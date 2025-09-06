@@ -30,7 +30,7 @@ class PostRewrite extends Command
 
             $fetchedParameters = $wPostQ->SourcePost->doc;
             
-            $rewritedParams = $postRewriteService->run( $wPostQ->id, true );
+            $rewritedParams = $postRewriteService->run( $wPostQ->id );
 
             $websitePost = new WebsitePost();
             $websitePost->website_post_queue_id = $wPostQ->id;
