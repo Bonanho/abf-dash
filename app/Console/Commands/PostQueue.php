@@ -57,9 +57,10 @@ class PostQueue extends Command
                         $selectdPost = $avaliablePosts->random();
 
                         $wPostQ = new WebsitePostQueue();
-                        $wPostQ->website_id     = $website->id;
-                        $wPostQ->source_id      = $source->id;
-                        $wPostQ->source_post_id = $selectdPost->id;
+                        $wPostQ->website_id         = $website->id;
+                        $wPostQ->website_source_id  = $wSource->id;
+                        $wPostQ->source_id          = $source->id;
+                        $wPostQ->source_post_id     = $selectdPost->id;
                         $wPostQ->save();
 
                         echo $selectdPost->id;

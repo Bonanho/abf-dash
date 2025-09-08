@@ -24,26 +24,37 @@ class PostRewriteService
 
         $postParams = $websitePostQueue->SourcePost->doc;
 
-        $rewritedParams = (object) ["title"=>"DEV", "description"=>"DEV", "content"=>"DEV"];
-        if( !$devMode )
-        {
-            # Title
-            echo "title - ";
-            $rewritedParams->title = $this->rewriteAi( $postParams->title, 'title' );
-            
-            # Description
-            echo "description - ";
-            $rewritedParams->description = $this->rewriteAi( $postParams->description );
-            if (mb_strlen($rewritedParams->description) > 155) {
-                $rewritedParams->description = mb_substr($rewritedParams->description, 0, 152) . '...';
-            }
-            
-            # Content
-            echo "content - ";
-            $rewritedParams->content = $this->rewriteAi( $postParams->content, 'content' );
-            echo "Validation - ";
-            $rewritedParams->content = AuxService::validText( $rewritedParams->content );
+        $rewritedParams = (object) [];
+        
+        if( $devMode ) {
+            $rewritedParams->title = "Dev";
+            $rewritedParams->description = "Dev";
+            $rewritedParams->content = "Dev";
+            $rewritedParams->seoData = '{"title":"DEV","description":"DEV","keywords":["DEVs","desenvolvimento","programação","desenvolvedor","software"],"focus_keyword":"DEVs"}';
         }
+
+        # Title
+        echo "title - ";
+        $title = $this->rewriteAi( $postParams->title, 'title' );
+        $rewritedParams->title = substr($title, -1) == '.' ? substr($title, 0, -1) : $title;
+        
+        # Description
+        echo "description - ";
+        $rewritedParams->description = $this->rewriteAi( $postParams->description );
+        if (mb_strlen($rewritedParams->description) > 155) {
+            $rewritedParams->description = mb_substr($rewritedParams->description, 0, 152) . '...';
+        }
+        
+        # Content
+        echo "content - ";
+        $rewritedParams->content = $this->rewriteAi( $postParams->content, 'content' );
+        echo "content validation - ";
+        $rewritedParams->content = AuxService::validText( $rewritedParams->content );
+
+        # Palavras Chave
+        echo "SEO - ";
+        $seoData = SeoAiService::optimizeSeo($rewritedParams->title, $rewritedParams->description, $rewritedParams->content );
+        $rewritedParams->seoData = (object) $seoData;
 
         return $rewritedParams;
     }

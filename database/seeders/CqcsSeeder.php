@@ -29,7 +29,7 @@ class CqcsSeeder extends Seeder
         ]);
 
         Website::insert([
-            ['id'=>1, 'company_id'=>1, 'name'=>'Cqcs Site', 'url'=>'cqcssite.com.br', 'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['id'=>1, 'company_id'=>1, 'name'=>'Cqcs Site', 'url'=>'https://cqcssite.com.br', 'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
         ]);
 
         $this->setSource('Estadao',                     2, "https://www.estadao.com.br" );
@@ -77,7 +77,7 @@ class CqcsSeeder extends Seeder
         $source->save();
         
         WebsiteSource::insert([
-            ['website_id'=>1, 'source_id'=>$source->id, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>1, 'source_id'=>$source->id, 'status_id'=>1, 'doc'=> '{"defaultPostStatus":"publish"}', 'created_at'=>$date, 'updated_at'=>$date],
         ]);
     }
 }

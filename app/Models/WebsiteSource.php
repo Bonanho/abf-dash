@@ -27,4 +27,18 @@ class WebsiteSource extends Model
 
     ###############
     ### METHODS ###
+    public function getWpPostStatus()
+    {
+        // Principais status de posts no WordPress:
+        $wpPostStatus["publish"]    = "Publicado";  // publicado imediatamente e visível no site.
+        // $wpPostStatus["future"]     = "Agendado";  // agendado para publicação em uma data/hora futura (date ou date_gmt).
+        $wpPostStatus["draft"]      = "Rascunho";  // rascunho (não visível ao público).
+        $wpPostStatus["pending"]    = "Pendente";  // pendente de revisão (alguém com permissão precisa aprovar/publicar).
+        // $wpPostStatus["private"]    = "Privado";  // publicado, mas apenas usuários logados com permissão conseguem ver.
+        // $wpPostStatus["trash"]      = "Lixeira";  // enviado para a lixeira.
+        // $wpPostStatus["auto"]       = "Auto";  // draft → rascunho automático criado pelo WordPress (geralmente quando você começa a escrever mas ainda não salvou nada).
+        // $wpPostStatus["inherit"]    = "Anexos";  // usado para anexos (imagens, arquivos), herdam o status do post pai.
+
+        return $wpPostStatus;
+    }
 }

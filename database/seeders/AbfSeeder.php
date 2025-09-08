@@ -41,11 +41,11 @@ class AbfSeeder extends Seeder
         ]);
 
         # Websites
-        $this->setWebsite( 2, 1, "Alerta Jornal",  "alertajornal.com.br"    );
-        $this->setWebsite( 2, 1, "Bona News",      "bonanews.com.br"        );
-        $this->setWebsite( 2, 2, "Invest Agora",   "investagora.com.br"     );
-        $this->setWebsite( 2, 2, "Papo Invest",    "papoinvest.com.br"      );
-        $this->setWebsite( 2, 3, "Techzando",      "techzando.com.br"       );
+        $this->setWebsite( 1, 1, "Alerta Jornal",  "alertajornal.com.br"    );
+        $this->setWebsite( 1, 1, "Bona News",      "bonanews.com.br"        );
+        $this->setWebsite( 1, 2, "Invest Agora",   "investagora.com.br"     );
+        $this->setWebsite( 1, 2, "Papo Invest",    "papoinvest.com.br"      );
+        $this->setWebsite( 1, 3, "Techzando",      "techzando.com.br"       );
         
         Source::insert([
             ['id'=>1, 'name'=>'CNN',       'url'=>'https://cnnbrasil.com.br',   'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
@@ -53,14 +53,15 @@ class AbfSeeder extends Seeder
             ['id'=>3, 'name'=>'Poder 360', 'url'=>'https://www.poder360.com.br', 'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
         ]);
 
+        $postStatus = '{"defaultPostStatus":"publish"}';
         WebsiteSource::insert([
-            ['website_id'=>1, 'source_id'=>'1', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['website_id'=>1, 'source_id'=>'2', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['website_id'=>2, 'source_id'=>'1', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['website_id'=>2, 'source_id'=>'3', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['website_id'=>3, 'source_id'=>'1', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['website_id'=>2, 'source_id'=>'2', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['website_id'=>2, 'source_id'=>'3', 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>1, 'source_id'=>'1', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>1, 'source_id'=>'2', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>2, 'source_id'=>'1', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>2, 'source_id'=>'3', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>3, 'source_id'=>'1', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>2, 'source_id'=>'2', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>2, 'source_id'=>'3', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
         ]);
 
     }

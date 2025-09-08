@@ -40,6 +40,7 @@ return new class extends Migration
         Schema::create('websites_posts_queue', function (Blueprint $table) {
             $table->bigIncrements("id");
             $table->integer('website_id');
+            $table->integer('website_source_id');
             $table->integer('source_id');
             $table->bigInteger('source_post_id');
             $table->json('doc')->nullable();
@@ -51,6 +52,7 @@ return new class extends Migration
             $table->bigIncrements("id");
             $table->bigInteger('website_post_queue_id');
             $table->integer('website_id');
+            $table->integer('website_source_id');
             $table->integer('source_id');
             $table->bigInteger('source_post_id');
             $table->string('post_title');
@@ -59,7 +61,11 @@ return new class extends Migration
             $table->string('post_image');
             $table->string('post_image_caption');
             $table->string('post_category');
+            $table->json('seo_data');
             $table->string('url_original');
+            $table->bigInteger('website_post_id')->nullable();
+            $table->bigInteger('website_image_id')->nullable();
+            $table->string('website_post_url')->nullable();
             $table->tinyinteger('status_id')->default(0);
             $table->timestamps();
         });
