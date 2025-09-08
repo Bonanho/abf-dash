@@ -249,13 +249,13 @@ class PostPublishService
             $err = curl_error($curl);
             $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
             curl_close($curl);
+            
+            if ($err) return dd($err);
 
-            if ($err) return null;
-
-            if ($httpCode !== 201) return null;
+            if ($httpCode !== 201) return dd($httpCode);
 
             $response = json_decode($result);
-            if (!$response || !isset($response->id)) return null;
+            if (!$response || !isset($response->id)) return dd($response);
 
             return $response->id;
         } 

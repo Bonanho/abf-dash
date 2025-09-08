@@ -17,6 +17,7 @@ https://g.mediagrumft.com/wp-admin/ - ( grumft - grumft )
 cqcs@mediagrumft.com
 AfXS!0re2ZN^m6R@F$qFyrCt
 
+### Comandos
 php artisan migrate
 php artisan db:seed --class=CqcsSeeder
 php artisan source:validate
