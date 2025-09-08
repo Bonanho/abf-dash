@@ -28,8 +28,10 @@ class CqcsSeeder extends Seeder
             ['id'=>3, 'name'=>'Finanças', 'created_at'=>$date, 'updated_at'=>$date],
         ]);
 
+        // ['id'=>1, 'company_id'=>1, 'name'=>'Cqcs Site', 'url'=>'http://wp-base.loc/', 'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date,'config'=>'{"siteMap":"wp-sitemap.xml","wpUser":"Bonanho","wpPass":"BonaWp2025$"}'],
         Website::insert([
-            ['id'=>1, 'company_id'=>1, 'name'=>'Cqcs Site', 'url'=>'https://cqcssite.com.br', 'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['id'=>1, 'company_id'=>1, 'name'=>'Cqcs Site', 'url'=>'https://g.mediagrumft.com', 'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date,
+            'config'=>'{"siteMap":"wp-sitemap.xml","wpUser":"cqcs@mediagrumft.com","wpPass":"AfXS!0re2ZN^m6R@F$qFyrCt"}'],
         ]);
 
         $this->setSource('Estadao',                     2, "https://www.estadao.com.br" );
