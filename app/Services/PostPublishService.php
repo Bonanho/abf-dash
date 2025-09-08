@@ -250,12 +250,12 @@ class PostPublishService
             $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
             curl_close($curl);
             
-            if ($err) return dd($err);
+            if ($err) return dd("Erro", $err);
 
-            if ($httpCode !== 201) return dd($httpCode);
+            if ($httpCode !== 201) return dd("HttpCode", $httpCode);
 
             $response = json_decode($result);
-            if (!$response || !isset($response->id)) return dd($response);
+            if (!$response || !isset($response->id)) return dd("Response",$response);
 
             return $response->id;
         } 
