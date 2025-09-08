@@ -10,6 +10,7 @@ class PostPublishService
     public $websiteUrl;
     public $credentials;
     public $sourceCitation;
+    public $sourceLink;
     public $siteMapUrl;
     public $defaultPostStatus;
     public $defaultImageId;
@@ -26,7 +27,9 @@ class PostPublishService
             "pass" => $websitePost->Website->config->wpPass,
         ];
         $this->credentials->auth = base64_encode($this->credentials->user. ':' . $this->credentials->pass);
+        
         $this->sourceCitation    = ( $websitePost->source->name ) ?? false;
+        $this->sourceLink        = ( $websitePost->url_original ) ?? false; 
 
         $this->siteMapUrl = $this->websiteUrl."wp-sitemap.xml";
     }
@@ -123,8 +126,10 @@ class PostPublishService
         $optimizedContent = self::optimizeContent( $postContent, $keyWords);
 
         if( $this->sourceCitation ){
-            // <a href="'.$post[0]['url_original'].'" rel="noopener nofollow noreferrer" target="_blank"></a> 
             $optimizedContent = $optimizedContent.'<p><small>Fonte por: '.$this->sourceCitation.'</small></p>';
+        }
+        if( $this->sourceLink ){
+            $optimizedContent = $optimizedContent.'<a href="'.$this->sourceLink.'" rel="noopener nofollow noreferrer" target="_blank"></a>';
         }
 
         return $optimizedContent;
