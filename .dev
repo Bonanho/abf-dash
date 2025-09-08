@@ -17,11 +17,25 @@ https://g.mediagrumft.com/wp-admin/ - ( grumft - grumft )
 cqcs@mediagrumft.com
 AfXS!0re2ZN^m6R@F$qFyrCt
 
+php artisan migrate
+php artisan db:seed --class=CqcsSeeder
+php artisan source:validate
+
+php artisan source:fetch
+php artisan post:queue
+php artisan post:rewrite
+php artisan post:publish
+
 ### Melhorias
 - Criar uma coluna na tabela de cada SITE FONTE, com palavras para exclusão e trocar no méthodo dp PostFetchService
 
 
-CQCS
--- UPDATE `abf_dash`.`sources` SET `doc` = '{\"erro\": \"Erro no source fetch \"}', `status_id` = '-2' WHERE `id` IN (5,17,23);
--- UPDATE `abf_dash`.`sources` SET `doc` = '{\"erro\": \"Erro no source fetch DATA\"}', `status_id` = '-2' WHERE (`id` = '24');
+CQCS ( estes apesar de passar no validate dão erro )
+-- UPDATE sources SET doc = '{"erro": "Erro no source fetch"}', status_id = -2 WHERE id IN (5,17,23);
+-- UPDATE sources SET doc = '{"erro": "Erro no source fetch DATA"}', status_id = -2 WHERE id IN (24);
 
+
+0 * * * * php /var/www/html/cqcs-dash/artisan source:fetch >> /tmp/cqcs_source-fetch
+10 * * * * php /var/www/html/cqcs-dash/artisan post:queue >> /tmp/cqcs_post-queue
+15 * * * * php /var/www/html/cqcs-dash/artisan post:rewrite >> /tmp/cqcs_post-rewrite
+*/10 * * * * php /var/www/html/cqcs-dash/artisan post:publish --limit >> /tmp/cqcs_post-publish

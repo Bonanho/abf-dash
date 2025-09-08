@@ -9,7 +9,7 @@ use DateTime;
 
 class PostPublish extends Command
 {
-    protected $signature = 'post:publish';
+    protected $signature = 'post:publish {--limit}';
 
     protected $description = 'Publica a matéria no website';
 
@@ -18,9 +18,13 @@ class PostPublish extends Command
         $printDate = (new DateTime())->format('Y-m-d H:i:s');
         $this->line("********** PostPublish - " . $printDate . " **********");
 
-        $websitePosts = WebsitePost::where("status_id", WebsitePost::STATUS_PENDING)
-            ->with("Website")->with("Source")
-            ->get();
+        $limit = $this->option('limit');
+
+        $websitePosts = WebsitePost::where("status_id", WebsitePost::STATUS_PENDING)->with("Website")->with("Source");
+        if( $limit ) {
+            $websitePosts->limit(1);
+        }
+        $websitePosts = $websitePosts->get();
 
         foreach($websitePosts as $wPost) 
         {
