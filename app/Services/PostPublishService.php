@@ -23,10 +23,10 @@ class PostPublishService
         $this->defaultImageId    = ""; // 67
 
         $this->credentials = (object)[
-            "user" => $websitePost->Website->config->wpUser,
-            "pass" => $websitePost->Website->config->wpPass,
+            // "user" => $websitePost->Website->config->wpUser,
+            // "pass" => $websitePost->Website->config->wpPass,
+            "auth" => base64_encode($websitePost->Website->config->wpUser. ':' . $websitePost->Website->config->wpPass)
         ];
-        $this->credentials->auth = base64_encode($this->credentials->user. ':' . $this->credentials->pass);
         
         $this->sourceCitation    = ( $websitePost->source->name ) ?? false;
         $this->sourceLink        = ( $websitePost->url_original ) ?? false; 
@@ -36,7 +36,7 @@ class PostPublishService
 
     public function run() 
     {
-        // $this->wPost->setStatus( WebsitePost::STATUS_PROCESSING);
+        $this->wPost->setStatus( WebsitePost::STATUS_PROCESSING);
         
         $title       = $this->wPost->post_title;
         $description = $this->wPost->post_description;
@@ -72,7 +72,7 @@ class PostPublishService
         );
         
         $result = json_decode($response['result'], true);
-        
+
         foreach ($result as $key => $category) 
         {
             if($category['name'] == $postCategory)
@@ -125,12 +125,16 @@ class PostPublishService
 
         $optimizedContent = self::optimizeContent( $postContent, $keyWords);
 
-        if( $this->sourceCitation ){
-            $optimizedContent = $optimizedContent.'<p><small>Fonte por: '.$this->sourceCitation.'</small></p>';
-        }
         if( $this->sourceLink ){
-            $optimizedContent = $optimizedContent.'<a href="'.$this->sourceLink.'" rel="noopener nofollow noreferrer" target="_blank"></a>';
+            $sourceLink = '<a href="'.$this->sourceLink.'" rel="noopener nofollow noreferrer" target="_blank">'.$this->sourceCitation.'</a>';
         }
+        if( $this->sourceCitation ){
+            $sourceDesc = ($this->sourceLink) ? $sourceLink : $this->sourceCitation;
+            $citation = '<p><small>Fonte por: '.$sourceDesc.'</small></p>';
+        }
+        
+
+        $optimizedContent.= $citation;
 
         return $optimizedContent;
     }
