@@ -252,10 +252,10 @@ class PostPublishService
             
             if ($err) return dd("Erro", $err);
 
-            if ($httpCode !== 201) return dd("HttpCode", $httpCode, $err);
+            if ($httpCode !== 201) return dd("HttpCode", $httpCode, $result);
 
             $response = json_decode($result);
-            if (!$response || !isset($response->id)) return dd("Response",$response, $err);
+            if (!$response || !isset($response->id)) return dd("Response",$response, $result);
 
             return $response->id;
         } 
