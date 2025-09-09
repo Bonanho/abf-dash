@@ -1,4 +1,4 @@
-<form action="{{ $action }}" method="{{ $method }}" enctype="{{@$enctype}}" >
+<form id="{{ @$id }}" action="{{ $action }}" method="{{ $method }}" enctype="{{@$enctype}}" >
     @csrf
     @method( $method )
 

@@ -14,6 +14,10 @@ class WebsiteSource extends Model
         'doc' => 'object',
     ];
 
+    CONST STATUS_ACTIVE = 1;
+    CONST STATUS_INACTIVE = 0;
+    CONST STATUS = [1=>"Ativo", 0=>"Pausado"];
+
     ####################
     ### RELATIONSHIP ###
     
@@ -27,6 +31,11 @@ class WebsiteSource extends Model
 
     ###############
     ### METHODS ###
+
+    public function getStatus() {
+        return self::STATUS[$this->status_id];
+    }
+
     public function getWpPostStatus()
     {
         // Principais status de posts no WordPress:

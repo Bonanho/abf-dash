@@ -31,6 +31,12 @@ Route::prefix('website')->middleware('auth')->group( function()
     Route::get('list',[Websites::class, 'index'])->name('website');
     Route::get('edit/{id?}',[Websites::class, 'edit'])->name('website-edit');
     Route::post('store',[Websites::class,'store'])->name('website-store');
+
+    Route::prefix('w-source')->middleware('auth')->group( function()
+    {
+        Route::get('list/{websiteId}',[Websites::class, 'wSourceIndex'])->name('website-source');
+        Route::post('store',[Websites::class,'wSourceStore'])->name('website-source-store');
+    });
 });
 Route::prefix('website-queue')->middleware('auth')->group( function()
 {

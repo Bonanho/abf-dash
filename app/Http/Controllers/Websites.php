@@ -9,6 +9,7 @@ use App\Models\Company;
 use App\Models\AuxCategory;
 use App\Models\WebsitePost;
 use App\Models\WebsitePostQueue;
+use App\Models\WebsiteSource;
 
 class Websites extends Controller
 {
@@ -44,6 +45,12 @@ class Websites extends Controller
             $website->url         = $request->url;
             $website->status_id   = $request->status_id;
 
+            $config = (@$website->config) ?? (object) [];
+            $config->wpUser  = $request->wpuser;
+            $config->wpPass  = $request->wppass;
+            $config->siteMap = $request->sitemap;
+            $website->config = $config;
+
             $website->save();
 
             return redirect()->route('website'); 
@@ -56,6 +63,65 @@ class Websites extends Controller
         }
 
     }
+
+    ##################
+    ## Website Sources
+    
+    public function wSourceIndex( $websiteId )
+    {
+        $websiteId = codeDecrypt($websiteId);
+        $wSources = WebsiteSource::where("website_id",$websiteId)->get();
+
+        return view('website.wsource-index', compact('websiteId','wSources'));
+    }
+
+    public function wSourceStore( Request $request )
+    {
+        try
+        {
+            $websiteId = codeDecrypt($request->website_id);
+            $action = $request->action;
+
+            if( $action=="config" ||  $action=="update" )
+            {
+                $wSourceId = codeDecrypt($request->id);
+                $websiteSource = WebsiteSource::find($wSourceId);
+
+                if( $action=="config" )
+                {
+                    $doc = (@$websiteSource->doc) ?? (object) [];
+                    if( isset($request->rewrite) ){
+                        $doc->rewrite = (int) $request->rewrite;
+                    }
+                    elseif( isset($request->defaultPostStatus) ){
+                        $doc->defaultPostStatus = (int) $request->defaultPostStatus; 
+                    }
+                    $websiteSource->doc = $doc;
+                }
+                
+            }
+            elseif( $action == "create" )
+            {
+                $websiteSource = new WebsiteSource();
+                
+                $websiteSource->website_id  = $websiteId;
+                $websiteSource->source_id  = $request->source_id;
+            }
+
+            $websiteSource->save();
+
+            return redirect()->route('website-source',$request->website_id);
+        }
+        catch (\Exception $err) 
+        {   dd($err);
+            sessionMessage("error", "Erro ao salvar campanha:<br> {$err->getMessage()}");
+
+            return redirect()->back();
+        }
+
+    }
+
+
 
     ################
     ## Posts Queue
