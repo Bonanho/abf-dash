@@ -1,4 +1,5 @@
-<table class="table table-striped table-hover border rounded">
+{{-- <table class="table table-striped table-hover border rounded"> --}}
+<table class="table table-stripped table-bordered table-hover dataTables-example sortTable" id="consult-table" style="color: darkgray">
     
     <thead>
         <tr>

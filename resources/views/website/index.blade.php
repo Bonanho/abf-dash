@@ -6,7 +6,7 @@
             <x-app.btn-icon type="entity" text="Cadastrar Website" :href="route('website-edit')"></x-app.btn-icon>
         </x-app.page-header>
 
-        <x-app.table :titles="['Id','Nome','URL','Categoria','Empresa','Status']">
+        <x-app.table :titles="['Id','Nome','URL','Categoria','Empresa','Status','Ações']">
             @foreach( $websites as $website)
                 <tr>
                     <td>{{$website->id}}</td>

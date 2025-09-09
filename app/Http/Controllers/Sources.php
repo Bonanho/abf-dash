@@ -60,14 +60,14 @@ class Sources extends Controller
     {
         $posts = SourcePost::all();
 
-        return view('source.queue', compact('posts'));
+        return view('source.source-posts', compact('posts'));
     }
 
     public function sourcePostStore( Request $request )
     {
         $posts = SourcePost::all();
 
-        return view('source.queue', compact('posts'));
+        return view('source.source-posts', compact('posts'));
     }
 
 }
