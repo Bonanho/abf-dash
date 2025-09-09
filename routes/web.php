@@ -32,7 +32,12 @@ Route::prefix('website')->middleware('auth')->group( function()
     Route::get('edit/{id?}',[Websites::class, 'edit'])->name('website-edit');
     Route::post('store',[Websites::class,'store'])->name('website-store');
 });
-Route::prefix('posts')->middleware('auth')->group( function()
+Route::prefix('website-queue')->middleware('auth')->group( function()
+{
+    Route::get('list',[Websites::class, 'postsQueueList'])->name('queue');
+    Route::post('store',[Websites::class,'postsQueueStore'])->name('queue-store');
+});
+Route::prefix('website-posts')->middleware('auth')->group( function()
 {
     Route::get('list',[Websites::class, 'postsList'])->name('posts');
     Route::post('store',[Websites::class,'postsStore'])->name('posts-store');
@@ -46,10 +51,10 @@ Route::prefix('source')->middleware('auth')->group( function()
     Route::post('store',[Sources::class,'store'])->name('source-store');
 });
 
-Route::prefix('queue')->middleware('auth')->group( function()
+Route::prefix('source-posts')->middleware('auth')->group( function()
 {
-    Route::get('list',[Sources::class, 'queueList'])->name('queue');
-    Route::post('store',[Sources::class,'queueStore'])->name('queue-store');
+    Route::get('list',[Sources::class, 'sourcePostList'])->name('source-post');
+    Route::post('store',[Sources::class,'sourcePostStore'])->name('source-post-store');
 });
 
 Route::prefix('category')->middleware('auth')->group( function()

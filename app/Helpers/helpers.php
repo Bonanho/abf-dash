@@ -285,4 +285,11 @@ function removeAccents( $string )
     );
     return strtolower($result);
 }
+
+function strLimit( $string, $limit=30 )
+{
+    $newString = (strlen($string) > $limit) ? substr($string, 0, $limit)."..." : $string;
+
+    return strtolower($newString);
+}
 ?>

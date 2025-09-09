@@ -22,10 +22,10 @@ php artisan migrate
 php artisan db:seed --class=CqcsSeeder
 php artisan source:validate
 
-php artisan source:fetch
-php artisan post:queue
-php artisan post:rewrite
-php artisan post:publish
+php artisan source:fetch    -- Busca posts nos sites fonte
+php artisan post:queue      -- Monta fila de posts Website / Source 
+php artisan post:rewrite    -- Reescritas de IA ( inclusive SEO )
+php artisan post:publish    -- Define Categoria, Sobe Imagem, Add Autor/Link, Publica, Update metaRankMath
 
 ### Melhorias
 - Criar uma coluna na tabela de cada SITE FONTE, com palavras para exclusão e trocar no méthodo dp PostFetchService

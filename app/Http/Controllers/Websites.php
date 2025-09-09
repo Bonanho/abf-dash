@@ -8,6 +8,7 @@ use App\Models\Website;
 use App\Models\Company;
 use App\Models\AuxCategory;
 use App\Models\WebsitePost;
+use App\Models\WebsitePostQueue;
 
 class Websites extends Controller
 {
@@ -57,20 +58,37 @@ class Websites extends Controller
     }
 
     ################
+    ## Posts Queue
+
+    public function postsQueueList()
+    {
+        $queuePosts = WebsitePostQueue::all();
+
+        return view('website.website-queue', compact('queuePosts'));
+    }
+
+    public function postsQueueStore( Request $request )
+    {
+        $posts = WebsitePostQueue::all();
+
+        return redirect()->route("website-queue");
+    }
+
+    ################
     ## Posts
 
     public function postsList()
     {
         $posts = WebsitePost::all();
 
-        return view('website.posts', compact('posts'));
+        return view('website.website-posts', compact('posts'));
     }
 
     public function postsStore( Request $request )
     {
         $posts = WebsitePost::all();
 
-        return view('website.posts', compact('posts'));
+        return redirect()->route("website-post");
     }
 
 }

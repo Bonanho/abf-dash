@@ -1,12 +1,13 @@
 @php
     $uri = $_SERVER['REQUEST_URI'];
 
-    $dashboard = (strpos($uri, 'dashboard')) ? 'active' : '';
-    $website   = (strpos($uri, 'website')) ? 'active' : '';
-    $posts     = (strpos($uri, 'posts')) ? 'active' : '';
-    $category  = (strpos($uri, 'category')) ? 'active' : '';
-    $source    = (strpos($uri, 'source')) ? 'active' : '';
-    $queue     = (strpos($uri, 'queue')) ? 'active' : '';
+    $dashboard      = (strpos($uri, 'dashboard')) ? 'active' : '';
+    $category       = (strpos($uri, 'category')) ? 'active' : '';
+    $websiteQueue   = (strpos($uri, 'website-queue')) ? 'active' : '';
+    $websitePosts   = (strpos($uri, 'website-posts')) ? 'active' : '';
+    $website        = (!$websiteQueue && !$websitePosts && strpos($uri, 'website')) ? 'active' : '';
+    $sourcePost     = (strpos($uri, 'source-post')) ? 'active' : '';
+    $source         = (!$sourcePost && strpos($uri, 'source')) ? 'active' : '';
 @endphp
 
 <nav class="sidebar sidebar-dark sidebar-fixed border-end" id="sidebar">
@@ -27,8 +28,8 @@
 
         <li class="nav-item">
             <a class="nav-link {{ $dashboard }}" href="{{route('dashboard')}}">
-            <svg class="nav-icon">
-                    <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-speedometer"></use>
+                <svg class="nav-icon">
+                        <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-speedometer"></use>
                 </svg>  
                 Dashboard
             </a>
@@ -46,7 +47,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {{ $posts }}" href="{{route('posts')}}">
+            <a class="nav-link {{ $websitePosts }}" href="{{route('posts')}}">
                 <svg class="nav-icon">
                     <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-basket"></use>
                 </svg>
@@ -54,7 +55,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {{ $posts }}" href="{{route('posts')}}">
+            <a class="nav-link {{ $websiteQueue }}" href="{{route('queue')}}">
                 <svg class="nav-icon">
                     <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-basket"></use>
                 </svg>
@@ -80,7 +81,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {{ $queue }}" href="{{route('queue')}}">
+            <a class="nav-link {{ $sourcePost }}" href="{{route('source-post')}}">
                 <svg class="nav-icon">
                     <use xlink:href="{{$asset}}/vendors/@coreui/icons/svg/free.svg#cil-basket"></use>
                 </svg>
@@ -88,7 +89,7 @@
             </a>
         </li>
         
-        <li class="nav-divider"></li>
+        {{-- <li class="nav-divider"></li>
         <li class="nav-title mt-1">Relatórios</li>
         <li class="nav-item">
             <a class="nav-link" href="{{route('report_post')}}">
@@ -97,7 +98,7 @@
                 </svg>
                 Posts
             </a>
-        </li>
+        </li> --}}
         {{-- <li class="nav-item">
             <a class="nav-link" href="{{route('report_ads')}}">
                 <svg class="nav-icon">

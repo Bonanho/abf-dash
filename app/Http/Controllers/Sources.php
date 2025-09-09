@@ -56,14 +56,14 @@ class Sources extends Controller
     ################
     ## Fila de posts
 
-    public function queueList()
+    public function sourcePostList()
     {
         $posts = SourcePost::all();
 
         return view('source.queue', compact('posts'));
     }
 
-    public function queueStore( Request $request )
+    public function sourcePostStore( Request $request )
     {
         $posts = SourcePost::all();
 
