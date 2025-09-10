@@ -102,7 +102,7 @@ class SeoAiService
             $response = mb_convert_encoding($response, 'UTF-8', 'auto');
         }
 
-        $response = FormatAi::FormatAi($response);
+        $response = AuxService::FormatAi($response);
 
         $patterns = [ '- ', '1)-', '2)-', '3)-', '4)-', '5)-', '"', '(', ')', '1)', '2)', '3)', '4)', '5)', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 ' ];
         $response = str_replace($patterns, '', $response);

@@ -34,7 +34,7 @@ class PostProcessService
             $processedParams->title       = "DevMode - ".$postParams->title;
             $processedParams->description = "DevMode - ".$postParams->description;
             $processedParams->content     = "DevMode - ".strLimit($postParams->content,100);
-            $processedParams->seoData     = '{"title":"'.$processedParams->title.'","description":"'.$processedParams->description.'","keywords":["DEVs","desenvolvimento","programação","desenvolvedor","software"],"focus_keyword":"DEVs"}';
+            $processedParams->seoData     = (object) ["title"=>"'.$processedParams->title.'","description"=>"'.$processedParams->description.'","keywords"=>["DEVs","desenvolvimento","programação","desenvolvedor","software"],"focus_keyword"=>"DEVs"];
             return $processedParams;
         }
 

@@ -205,6 +205,9 @@ class PostFetchService
     {
         $post = $this->sourcePost->post_data2;
 
+        if( !isset($post->featured_media) || $post->featured_media == 0 ) {
+            return (object) ["url"=>"", "caption"=>""];
+        }
         $imageApi = $this->getWp( $this->apiUrlBaseMedia . $post->featured_media );
 
         if (!empty($post->yoast_head_json->og_image[0]->url)) {

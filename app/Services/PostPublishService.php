@@ -105,6 +105,9 @@ class PostPublishService
 
     protected function defineImage()
     {
+        if( !$this->wPost->website_image ){
+            return 0;
+        }
         if( !$this->wPost->website_image_id )
         {
             $url = $this->websiteUrl . 'wp-json/wp/v2/media';
@@ -153,6 +156,9 @@ class PostPublishService
 
             if ( !empty($imageId) && is_numeric($imageId) ) {
                 $data['featured_media'] = (int)$imageId;
+            } 
+            elseif( $imageId===0 ){
+                $data['featured_media'] = 0;
             }
 
             $response = self::makeCurlRequest(
@@ -162,13 +168,13 @@ class PostPublishService
             );
             
             if ($response['httpCode'] !== 201) {
-                echo "PostPublishService->publish L157: Erro ao publicar - " . $response['httpCode'];
+                echo "PostPublishService->publish L168: Erro ao publicar - " . $response['httpCode'];
                 return false;
             }
 
             $post = json_decode($response['result']);
             if (!$post || !isset($post->id)) {
-                echo "PostPublishService->publish L163: Erro ao publicar - " . $response['httpCode'];
+                echo "PostPublishService->publish L174: Erro ao publicar - " . $response['httpCode'];
                 return false;
             }
 
@@ -343,7 +349,7 @@ class PostPublishService
             }
             
             $linkCount = 0;           
-            $titleWords = explode(' ', $seoData['title']);
+            $titleWords = explode(' ', $seoData->title);
             foreach ($titleWords as $word) {
                 if ($linkCount >= 3) break;
                 $wordFormat = removeAccents(strtolower($word));
@@ -465,13 +471,13 @@ class PostPublishService
 
             $yoastMeta = [];
 
-            $addMetaIfNotEmpty('_yoast_wpseo_title', isset($seoData['title']) ? $seoData['title'] : $title);
-            $addMetaIfNotEmpty('_yoast_wpseo_metadesc', isset($seoData['description']) ? $seoData['description'] : $description);
+            $addMetaIfNotEmpty('_yoast_wpseo_title', isset($seoData->title) ? $seoData->title : $title);
+            $addMetaIfNotEmpty('_yoast_wpseo_metadesc', isset($seoData->description) ? $seoData->description : $description);
             $addMetaIfNotEmpty('_yoast_wpseo_focuskw', $focusKeyword ?? '');
-            $addMetaIfNotEmpty('_yoast_wpseo_opengraph-title', isset($seoData['title']) ? $seoData['title'] : $title);
-            $addMetaIfNotEmpty('_yoast_wpseo_opengraph-description', isset($seoData['description']) ? $seoData['description'] : (substr(strip_tags($content), 0, 160) ?: $description));
-            $addMetaIfNotEmpty('_yoast_wpseo_twitter-title', isset($seoData['title']) ? $seoData['title'] : $title);
-            $addMetaIfNotEmpty('_yoast_wpseo_twitter-description', isset($seoData['description']) ? $seoData['description'] : (substr(strip_tags($content), 0, 160) ?: $description));
+            $addMetaIfNotEmpty('_yoast_wpseo_opengraph-title', isset($seoData->title) ? $seoData->title : $title);
+            $addMetaIfNotEmpty('_yoast_wpseo_opengraph-description', isset($seoData->description) ? $seoData->description : (substr(strip_tags($content), 0, 160) ?: $description));
+            $addMetaIfNotEmpty('_yoast_wpseo_twitter-title', isset($seoData->title) ? $seoData->title : $title);
+            $addMetaIfNotEmpty('_yoast_wpseo_twitter-description', isset($seoData->description) ? $seoData->description : (substr(strip_tags($content), 0, 160) ?: $description));
 
             $postData = [
                 'content' => $content,

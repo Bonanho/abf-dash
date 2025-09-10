@@ -49,7 +49,7 @@ class Source extends Model
     public static function getSourcesToFetchPosts()
     {
         $sources = self::where("status_id",self::STATUS_ACTIVE)
-        // ->where("id",33)
+        // ->whereIn("id",[3,24])
         ->get();
 
         return $sources;

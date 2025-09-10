@@ -16,8 +16,8 @@ class SourcePost extends Model
         'post_data2' => 'object',
     ];
 
-    CONST STATUS_DONE       = 2;
-    CONST STATUS_PROCESSING = 1;
+    CONST STATUS_DONE       = 1;
+    CONST STATUS_PROCESSING = 11;
     CONST STATUS_PENDING    = 0;
     CONST STATUS_ERROR      = -1;
     CONST STATUS = [2=>"Concluido", 1=>"Proccessando", 0=>"Pendente", -1=>"Erro"];

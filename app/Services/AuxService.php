@@ -236,7 +236,7 @@ class AuxService
      * Remove blocos HTML repetidos (p, h1-h6, li, blockquote, pre) mantendo a primeira ocorrência.
      * Útil para eliminar repetições geradas pela origem ou pela IA.
      */
-    private static function removeRepeatedBlocks($content) {
+    public static function removeRepeatedBlocks($content) {
         if (empty($content)) return $content;
 
         // Divide o conteúdo em blocos começando em tags de bloco comuns

@@ -43,7 +43,7 @@ class PostQueue extends Command
                     ->select("id","source_id","created_at","doc->title as title")->get();
 
                 $sourcePosts = $sourcePosts->groupBy("source_id");
-            
+
                 # Websites - Sources
                 foreach( $website->Sources as $wSource )
                 {
