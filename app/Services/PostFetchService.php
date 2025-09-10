@@ -245,7 +245,16 @@ class PostFetchService
                 CURLOPT_TIMEOUT => 300,
                 CURLOPT_FOLLOWLOCATION => true,
                 CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                CURLOPT_ENCODING => 'gzip, deflate' // Suporte a compressão
+                CURLOPT_ENCODING => 'gzip, deflate',
+                CURLOPT_HTTPHEADER => [
+                    'Accept: application/json',
+                    'Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+                    'Connection: keep-alive',
+                    'Cache-Control: no-cache',
+                    'Pragma: no-cache',
+                    'DNT: 1',
+                    'Upgrade-Insecure-Requests: 1',
+                ], 
             ]);
             
             $response = curl_exec($ch);
