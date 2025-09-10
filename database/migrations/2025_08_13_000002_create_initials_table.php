@@ -43,6 +43,7 @@ return new class extends Migration
             $table->integer('website_source_id');
             $table->integer('source_id');
             $table->bigInteger('source_post_id');
+            $table->tinyinteger('type_id');
             $table->json('doc')->nullable();
             $table->tinyinteger('status_id')->default(0);
             $table->timestamps();

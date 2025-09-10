@@ -20,11 +20,19 @@ class WebsitePostQueue extends Model
     CONST STATUS_ERROR = -1;
     CONST STATUS = [1=>"Concluido", 0=>"Pendente", -1=>"Erro", 11=>"Processando"];
 
+    CONST TYPE_COPY = 1;
+    CONST TYPE_REWRITE = 2;
+    CONST TYPES = [1=>"Cópia", 2=>"Reescrita"];
+
     ####################
     ### RELATIONSHIP ###
 
     public function Website() {
         return $this->belongsTo(Website::class, 'website_id', 'id');
+    }
+
+    public function WebsiteSource() {
+        return $this->belongsTo(WebsiteSource::class, 'website_source_id', 'id');
     }
 
     public function Source() {
@@ -47,4 +55,23 @@ class WebsitePostQueue extends Model
         $this->save();
         return true;
     }
+    
+    public function getType() {
+        return self::TYPES[$this->type_id];
+    }
+
+    public function defineType()
+    {
+        $rewrite = (@$this->WebsiteSource->doc->rewrite) ?? 0;
+
+        if( $rewrite == 0 ) {
+            $typeId = self::TYPE_COPY;
+        }
+        elseif( $rewrite == 1 ) {
+            $typeId = self::TYPE_REWRITE;
+        }
+
+        return $typeId;
+    }
+
 }

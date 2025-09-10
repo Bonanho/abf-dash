@@ -1,3 +1,29 @@
+### Melhorias
+- OK - Website cadastro de configs ( User, Senha e SiteMap )
+- OK - Website criar asossiação de Sources
+- OK - Tabelas com dataTable ( filtrar e paginação )
+- OK - Coniguração de Website / Sources ( Reescrita S/N ), ( Status Default de post ), ( Citação Sim / Sim com Link / Nao )
+- OK - Ajustar comando de reescrita usando parametro ( Reescrita S/N  )
+- Filtros de busca nas telas
+- Mostrar os arquivos de log
+- Melhorar front
+- Contabilizar erros de SOURCE para inativa-los após X ocorrencias
+- Rever todos os fluxos de comandos ( TryCatch ) para identificar erros e aproveita-los p corrigir fluxo
+- Link final do post publicado ( tabela ja ta pronta )
+- Descobrir maldito problema de publicar imagem pelos servidores
+- Trocar chamadas CURL por guzzle com service de WebRequest
+- Definir Templates de crawler baseado no tipo do site
+- Source com campos para regras gerais e de crawler
+- Criar uma coluna na tabela de cada SITE FONTE, com palavras para exclusão (strReplace) e trocar no méthodo dp PostFetchService
+
+
+-- LOCAL http://wp-base.loc {"wpPass": "BonaWp2025$", "wpUser": "Bonanho", "siteMap": "wp-sitemap.xml"}
+
+CQCS ( estes apesar de passar no validate dão erro )
+-- UPDATE sources SET doc = '{"erro": "Erro no source fetch"}', status_id = -2 WHERE id IN (5,17,23);
+-- UPDATE sources SET doc = '{"erro": "Erro no source fetch DATA"}', status_id = -2 WHERE id IN (24);
+
+
 ### Ollama
 https://ollama.com/download/linux
 curl -fsSL https://ollama.com/install.sh | sh
@@ -24,19 +50,11 @@ php artisan source:validate
 
 php artisan source:fetch    -- Busca posts nos sites fonte
 php artisan post:queue      -- Monta fila de posts Website / Source 
-php artisan post:rewrite    -- Reescritas de IA ( inclusive SEO )
+php artisan post:process    -- Cópia ou Reescritas de IA ambas usam SEO
 php artisan post:publish    -- Define Categoria, Sobe Imagem, Add Autor/Link, Publica, Update metaRankMath
 
-### Melhorias
-- Criar uma coluna na tabela de cada SITE FONTE, com palavras para exclusão e trocar no méthodo dp PostFetchService
-
-
-CQCS ( estes apesar de passar no validate dão erro )
--- UPDATE sources SET doc = '{"erro": "Erro no source fetch"}', status_id = -2 WHERE id IN (5,17,23);
--- UPDATE sources SET doc = '{"erro": "Erro no source fetch DATA"}', status_id = -2 WHERE id IN (24);
-
-
+### Cron
 0 * * * * php /var/www/html/cqcs-dash/artisan source:fetch >> /tmp/cqcs_source-fetch
 10 * * * * php /var/www/html/cqcs-dash/artisan post:queue >> /tmp/cqcs_post-queue
-15 * * * * php /var/www/html/cqcs-dash/artisan post:rewrite >> /tmp/cqcs_post-rewrite
+15 * * * * php /var/www/html/cqcs-dash/artisan post:process >> /tmp/cqcs_post-process
 */10 * * * * php /var/www/html/cqcs-dash/artisan post:publish --limit >> /tmp/cqcs_post-publish

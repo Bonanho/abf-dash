@@ -40,7 +40,7 @@ class PostQueue extends Command
                 $sourcePosts = SourcePost::where("created_at", ">=", $cutDate)->where("status_id",SourcePost::STATUS_DONE)
                     ->whereIn("source_id",$website->Sources->pluck("source_id"))
                     ->whereNotIn("id",$lastPostsId)
-                    ->select("id","source_id","created_at","doc->post_title as title")->get();
+                    ->select("id","source_id","created_at","doc->title as title")->get();
 
                 $sourcePosts = $sourcePosts->groupBy("source_id");
             
@@ -61,6 +61,8 @@ class PostQueue extends Command
                         $wPostQ->website_source_id  = $wSource->id;
                         $wPostQ->source_id          = $source->id;
                         $wPostQ->source_post_id     = $selectdPost->id;
+                        $wPostQ->type_id            = $wPostQ->defineType();
+
                         $wPostQ->save();
 
                         echo $selectdPost->id;

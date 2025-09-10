@@ -24,7 +24,7 @@ class SourceFetch extends Command
 
         foreach($sources as $source) 
         {   
-            echo "\n$source->name \n";
+            echo "\nSourceId: $source->id - Nome: $source->name \n";
             
             try
             {   
