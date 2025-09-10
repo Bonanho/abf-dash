@@ -55,17 +55,17 @@ class AbfSeeder extends Seeder
             ['name'=>'CNN Brasil',          'url'=>'https://www.cnnbrasil.com.br',          'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
             ['name'=>'Jovem Pan',           'url'=>'https://jovempan.com.br',               'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
             ['name'=>'Poder 360',           'url'=>'https://www.poder360.com.br',           'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['name'=>'Personare',           'url'=>'https://admin-cms.personare.com.br/',   'category_id'=>9, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['name'=>'Carta Capital',       'url'=>'https://www.cartacapital.com.br/',      'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['name'=>'Brasil de Fato',      'url'=>'https://www.brasildefato.com.br/',      'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['name'=>'Adrenaline',          'url'=>'https://www.adrenaline.com.br/',        'category_id'=>3, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['name'=>'FDR',                 'url'=>'https://fdr.com.br/', '', '',           'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['name'=>'O Antagonista',       'url'=>'https://oantagonista.com.br/',          'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['name'=>'Suno',                'url'=>'https://www.suno.com.br/', '',          'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['name'=>'Empiricus',           'url'=>'https://www.empiricus.com.br/',         'category_id'=>2, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['name'=>'InfoMoney',           'url'=>'https://www.infomoney.com.br/',         'category_id'=>2, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['name'=>'Seu Dinheiro',        'url'=>'https://www.seudinheiro.com/',          'category_id'=>2, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
-            ['name'=>'Cartão a Crédito',    'url'=>'https://www.cartaoacredito.com/',       'category_id'=>2, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['name'=>'Personare',           'url'=>'https://admin-cms.personare.com.br',    'category_id'=>9, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['name'=>'Carta Capital',       'url'=>'https://www.cartacapital.com.br',       'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['name'=>'Brasil de Fato',      'url'=>'https://www.brasildefato.com.br',       'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['name'=>'Adrenaline',          'url'=>'https://www.adrenaline.com.br',         'category_id'=>3, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['name'=>'FDR',                 'url'=>'https://fdr.com.br',                    'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['name'=>'O Antagonista',       'url'=>'https://oantagonista.com.br',           'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['name'=>'Suno',                'url'=>'https://www.suno.com.br',               'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['name'=>'Empiricus',           'url'=>'https://www.empiricus.com.br',          'category_id'=>2, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['name'=>'InfoMoney',           'url'=>'https://www.infomoney.com.br',          'category_id'=>2, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['name'=>'Seu Dinheiro',        'url'=>'https://www.seudinheiro.com',           'category_id'=>2, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
+            ['name'=>'Cartão a Crédito',    'url'=>'https://www.cartaoacredito.com',        'category_id'=>2, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date],
         ]);
 
         
@@ -90,7 +90,7 @@ class AbfSeeder extends Seeder
          Website::insert([
             [
                 'company_id'=>$company, 'name'=>$name, 'url'=>$url, 'category_id'=>$category, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date,
-                'config'=>'doc{"siteMap":"wp-sitemap.xml","wpUser":"'.$user.'","wpPass":"'.$pass.'"}' 
+                'config'=>'{"siteMap":"wp-sitemap.xml","wpUser":"'.$user.'","wpPass":"'.$pass.'"}' 
             ],
         ]);
     }
