@@ -54,15 +54,23 @@ class RewriterAiService
             if (!$loaded) return [];
             
             $xpath = new \DOMXPath($dom);
-            $paragraphs = $xpath->query('//p|//h1|//h2|//h3|//h4|//h5|//h6');
+            $paragraphs = $xpath->query('//p|//h1|//h2|//h3|//h4|//h5|//h6|//li');
             
             if (!$paragraphs) return [];
             
             $result = [];
             foreach ($paragraphs as $p) {
                 if ($p instanceof \DOMElement) {
+                    $parentTag = null;
+                    if ($p->tagName === 'li' && $p->parentNode instanceof \DOMElement) {
+                        $parentName = strtolower($p->parentNode->tagName);
+                        if ($parentName === 'ul' || $parentName === 'ol') {
+                            $parentTag = $parentName;
+                        }
+                    }
                     $result[] = [
                         'tag' => $p->tagName,
+                        'parent' => $parentTag,
                         'content' => $dom->saveHTML($p),
                         'html' => $dom->saveHTML($p)
                     ];
@@ -170,21 +178,51 @@ class RewriterAiService
         return $response;
     }
 
-    
-
     private static function reconstructHtml($originalParagraphs, $rewrittenContents) {
         try {
             if (empty($originalParagraphs) || empty($rewrittenContents)) return '';
             $result = '';
-            foreach ($originalParagraphs as $index => $p) {
-                if (isset($rewrittenContents[$index])) {
+            $count = count($originalParagraphs);
+            
+            for ($i = 0; $i < $count; $i++) {
+                $p = $originalParagraphs[$i];
+                
+                if (isset($p['tag']) && $p['tag'] === 'li' && isset($p['parent']) && ($p['parent'] === 'ul' || $p['parent'] === 'ol')) {
+                    $listTag = $p['parent'];
                     $dom = new \DOMDocument('1.0', 'UTF-8');
                     $dom->formatOutput = true;
+                    $listElement = $dom->createElement($listTag);
                     
-                    $element = $dom->createElement($p['tag']);
-                    $element->appendChild($dom->createTextNode($rewrittenContents[$index]));
+                    while ($i < $count) {
+                        $current = $originalParagraphs[$i];
+                        if (!isset($current['tag']) || $current['tag'] !== 'li' || !isset($current['parent']) || $current['parent'] !== $listTag) {
+                            break;
+                        }
+                        if (isset($rewrittenContents[$i])) {
+                            $liContent = trim($rewrittenContents[$i]);
+                            if ($liContent !== '') {
+                                $li = $dom->createElement('li');
+                                $li->appendChild($dom->createTextNode($liContent));
+                                $listElement->appendChild($li);
+                            }
+                        }
+                        $i++;
+                    }
+                    if ($listElement->hasChildNodes()) {
+                        $dom->appendChild($listElement);
+                        $result .= $dom->saveHTML($listElement);
+                    }
+                    $i--; 
+                    continue;
+                }
+                
+                if (isset($rewrittenContents[$i])) {
+                    $dom = new \DOMDocument('1.0', 'UTF-8');
+                    $dom->formatOutput = true;
+                    $tagName = isset($p['tag']) ? $p['tag'] : 'p';
+                    $element = $dom->createElement($tagName);
+                    $element->appendChild($dom->createTextNode($rewrittenContents[$i]));
                     $dom->appendChild($element);
-                    
                     $result .= $dom->saveHTML($element);
                 }
             }

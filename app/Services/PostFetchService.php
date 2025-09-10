@@ -294,8 +294,6 @@ class PostFetchService
             $content = mb_convert_encoding($content, 'UTF-8', 'auto');
         }
 
-        // $content = $this->filterWords($content);
-        
         $content = preg_replace('/<script\b[^>]*>(.*?)<\/script>/isu', '', $content);
         $content = preg_replace('/<style\b[^>]*>(.*?)<\/style>/isu', '', $content);
         $content = preg_replace('/<footer\b[^>]*>(.*?)<\/footer>/isu', '', $content);
@@ -307,16 +305,17 @@ class PostFetchService
         $content = preg_replace('/<figcaption\b[^>]*>(.*?)<\/figcaption>/isu', '', $content);
         $content = preg_replace('/<figure\b[^>]*>(.*?)<\/figure>/isu', '', $content);
         $content = preg_replace('/<h6\b[^>]*>(.*?)<\/h6>/isu', '', $content);
+        // Preservar imagens inline; ainda removemos SVGs por segurança
         $content = preg_replace('/<img\b[^>]*>/isu', '', $content);
         $content = preg_replace('/<svg\b[^>]*>/isu', '', $content);
 
         $content = str_replace(['<br>', '<br/>', '<br />'], "\n", $content); 
-        //$content = str_replace('FDR', "ZéNewsAi", $content); 
         // Usar strip_tags com encoding UTF-8
+
+        // Incluímos <img> para manter imagens inline e seus atributos (src, alt, etc.)
         $content = strip_tags($content, '<p><br><strong><b><em><i><ul><ol><li><h1><h2><h3><h4><h5><h6><blockquote><pre><code>');
         $content = preg_replace('/<(p|br|strong|b|em|i|ul|ol|li|h1|h2|h3|h4|h5|h6|blockquote|pre|code)[^>]*>/iu', '<$1>', $content);
         
-        // Usar mb_ereg_replace para melhor suporte a UTF-8
         $content = preg_replace('/\s+/u', ' ', $content);
         $content = trim($content);
         $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');

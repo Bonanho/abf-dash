@@ -31,7 +31,7 @@ class PostPublishService
         $this->sourceCitation    = ( $websitePost->source->name ) ?? false;
         $this->sourceLink        = ( $websitePost->url_original ) ?? false; 
 
-        $this->siteMapUrl = $this->websiteUrl."wp-sitemap.xml";
+        $this->siteMapUrl = $this->websiteUrl."wp-sitemap-posts-post-1.xml";
     }
 
     public function run() 
@@ -277,46 +277,119 @@ class PostPublishService
     {
         try 
         {
-            $sitemapUrls = [];
-
-            $sitemapContent = file_get_contents( $this->siteMapUrl );
-            if ($sitemapContent) {
-                preg_match_all('/<loc>(.*?)<\/loc>/', $sitemapContent, $matches);
-                foreach ($matches[1] as $sitemapUrl) {
-                    if (strpos($sitemapUrl, 'wp-sitemap-posts-post') !== false) {
-                        $postSitemap = file_get_contents($sitemapUrl);
-                        if ($postSitemap) {
-                            preg_match_all('/<loc>(.*?)<\/loc>/', $postSitemap, $postMatches);
-                            $sitemapUrls = array_merge($sitemapUrls, $postMatches[1]);
-                        }
-                    }
-                }
-            }
-
             foreach ( $postKeyWords as $keyword ) 
             {
                 $pattern = '/\b' . preg_quote($keyword, '/') . '\b/i';
                 $content = preg_replace($pattern, '<strong>$0</strong>', $content, 1);
             }
 
-            foreach ( $postKeyWords as $keyword ) 
-            {
-                foreach ($sitemapUrls as $url) 
-                {
-                    $urlTitle = basename($url);
-                    $urlTitle = urldecode($urlTitle);
-                    if (stripos($urlTitle, $keyword) !== false) 
-                    {
-                        $pattern = '/(?<!<h[2-4][^>]*>)(?<!<strong[^>]*>)\b(' . preg_quote($keyword, '/') . ')\b/i';
-                        $replacement = '<a href="' . $url . '">$1</a>';
+            $sitemapUrls = [];
+            $postSitemapUrl = $this->siteMapUrl; //str_replace('admin.', "", $this->websiteUrl) . 'wp-sitemap-posts-post-1.xml';
 
-                        $new_content = @preg_replace($pattern, $replacement, $content, 1);
-                        if ($new_content !== null && $new_content !== $content) {
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $postSitemapUrl,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_TIMEOUT => 300,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                CURLOPT_HTTPHEADER => [
+                    'Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
+                    'Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+                    'Accept-Encoding: gzip, deflate',
+                    'Connection: keep-alive',
+                    'Cache-Control: no-cache',
+                    'Pragma: no-cache',
+                    'DNT: 1',
+                    'Upgrade-Insecure-Requests: 1',
+                ],
+                CURLOPT_ENCODING => 'gzip, deflate'
+            ]);
+            
+            $postSitemap = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            if ($postSitemap && $httpCode === 200) {
+                preg_match_all('/<loc>(.*?)<\/loc>/', $postSitemap, $postMatches);
+                if (!empty($postMatches[1])) {
+                    $sitemapUrls = $postMatches[1];
+                }
+            }
+            
+            $linkCount = 0;           
+            $titleWords = explode(' ', $title);
+            foreach ($titleWords as $word) {
+                if ($linkCount >= 3) break;
+                $wordFormat = removeAccents(strtolower($word));
+                if (empty($wordFormat) || strlen($wordFormat) <= 5) continue;
+                foreach ($sitemapUrls as $url) {
+                    if (strpos($url, $wordFormat) !== false) {
+                        
+                        $wordFound = (stripos($content, $word) !== false) || (stripos($content, $wordFormat) !== false);
+                        if (!$wordFound) {
+                            continue;
+                        }
+                        
+                        $pattern = '/\b' . preg_quote($word, '/') . '\b/iu';
+                        $parts = preg_split('~(<[^>]+>)~', $content, -1, PREG_SPLIT_DELIM_CAPTURE);
+                        $didReplace = false;
+                        $tagDepth = [ 'a' => 0, 'strong' => 0, 'code' => 0, 'pre' => 0, 'script' => 0, 'noscript' => 0, 'style' => 0, 'h2' => 0, 'h3' => 0, 'h4' => 0, 'h5' => 0, 'h6' => 0, ];
+                        
+                        for ($pi = 0; $pi < count($parts); $pi++) {
+                            $segment = $parts[$pi];
+                            if ($segment !== '' && $segment[0] === '<') {
+                                if (preg_match('~^<\s*(/)?\s*([a-zA-Z][a-zA-Z0-9]*)\b~', $segment, $m)) {
+                                    $isClosing = !empty($m[1]);
+                                    $tagName = strtolower($m[2]);
+                                    if (isset($tagDepth[$tagName])) {
+                                        if ($isClosing) {
+                                            if ($tagDepth[$tagName] > 0) {
+                                                $tagDepth[$tagName]--;
+                                            }
+                                        } else {
+                                            if (!preg_match('~/\s*>$~', $segment)) {
+                                                $tagDepth[$tagName]++;
+                                            }
+                                        }
+                                    }
+                                }
+                                continue;
+                            }
+                            
+                            $insideForbidden = false;
+                            foreach ($tagDepth as $depth) {
+                                if ($depth > 0) { $insideForbidden = true; break; }
+                            }
+                            if ($insideForbidden) { continue; }
+                            
+                            $segmentReplaced = preg_replace($pattern, '<a href="' . $url . '">$0</a>', $segment, 1);
+                            if ($segmentReplaced !== null && $segmentReplaced !== $segment) {
+                                $parts[$pi] = $segmentReplaced;
+                                $didReplace = true;
+                                break;
+                            }
+                        }
+                        
+                        if ($didReplace) {
+                            $new_content = implode('', $parts);
+                        } else {
+                            $new_content = $content;
+                        }
+                        
+                        if ($new_content === null) {
+                            continue;
+                        }
+                        
+                        if ($new_content !== $content) {
                             $content = $new_content;
+                            $linkCount++;
                             break;
                         }
                     }
                 }
+
             }
 
             return $content;
@@ -359,45 +432,31 @@ class PostPublishService
                 echo "\n PostPublishService->metaRankMath L:344 - '$ focusKeyword' veio vazio! \n";
             }
 
-            $yoastMeta = [
-                'meta' => [
-                    [
-                        'key' => '_yoast_wpseo_focuskw',
-                        'value' => $focusKeyword
-                    ],
-                    [
-                        'key' => '_yoast_wpseo_metadesc',
-                        'value' => !empty($seoData->description) ? $seoData->description : (substr(strip_tags($content), 0, 160) ?: $description)
-                    ],
-                    [
-                        'key' => '_yoast_wpseo_title',
-                        'value' => !empty($seoData->title) ? $seoData->title : $title
-                    ],
-                    [
-                        'key' => '_yoast_wpseo_opengraph-title',
-                        'value' => !empty($seoData->title) ? $seoData->title : $title
-                    ],
-                    [
-                        'key' => '_yoast_wpseo_opengraph-description',
-                        'value' => !empty($seoData->description) ? $seoData->description : (substr(strip_tags($content), 0, 160) ?: $description)
-                    ],
-                    [
-                        'key' => '_yoast_wpseo_twitter-title',
-                        'value' => !empty($seoData->title) ? $seoData->title : $title
-                    ],
-                    [
-                        'key' => '_yoast_wpseo_twitter-description',
-                        'value' => !empty($seoData->description) ? $seoData->description : (substr(strip_tags($content), 0, 160) ?: $description)
-                    ]
-                ]
+            $addMetaIfNotEmpty = function($key, $value) use (&$yoastMeta) {
+                $trimmedValue = trim((string)$value);
+                if ($trimmedValue !== '') {
+                    $yoastMeta[$key] = $trimmedValue;
+                }
+            };
+
+            $yoastMeta = [];
+
+            $addMetaIfNotEmpty('_yoast_wpseo_title', isset($seoData['title']) ? $seoData['title'] : $title);
+            $addMetaIfNotEmpty('_yoast_wpseo_metadesc', isset($seoData['description']) ? $seoData['description'] : $description);
+            $addMetaIfNotEmpty('_yoast_wpseo_focuskw', $focusKeyword ?? '');
+            $addMetaIfNotEmpty('_yoast_wpseo_opengraph-title', isset($seoData['title']) ? $seoData['title'] : $title);
+            $addMetaIfNotEmpty('_yoast_wpseo_opengraph-description', isset($seoData['description']) ? $seoData['description'] : (substr(strip_tags($content), 0, 160) ?: $description));
+            $addMetaIfNotEmpty('_yoast_wpseo_twitter-title', isset($seoData['title']) ? $seoData['title'] : $title);
+            $addMetaIfNotEmpty('_yoast_wpseo_twitter-description', isset($seoData['description']) ? $seoData['description'] : (substr(strip_tags($content), 0, 160) ?: $description));
+
+            $postData = [
+                'content' => $content,
+                'meta' => $yoastMeta
             ];
 
             $postData = [
-                'title'      => $title,
-                'content'    => $content,
-                'status'     => $this->defaultPostStatus,
-                'categories' => [$category],
-                'meta'       => $yoastMeta['meta']
+                'content' => $content,
+                'meta' => $yoastMeta
             ];
 
             $response = self::makeCurlRequest(

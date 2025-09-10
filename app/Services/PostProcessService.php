@@ -63,6 +63,8 @@ class PostProcessService
             $processedParams->content = $this->rewriteAi( $postParams->content, 'content' );
             echo "content validation - ";
             $processedParams->content = AuxService::validText( $processedParams->content );
+            echo "removendo blocos repetidos - ";
+            $processedParams->content = AuxService::removeRepeatedBlocks( $processedParams->content );
         }
         
         # Palavras Chave

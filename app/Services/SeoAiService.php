@@ -8,11 +8,13 @@ class SeoAiService
      {
         try 
         {
+            //$optimizedTitle = self::optimizeTitle($title.". ".$description);
+            $optimizedDescription = self::optimizeDescription($description);
             $keywords = self::generateKeywords($title, $description, $content);
 
             return [
-                'title'         => $title,
-                'description'   => $description,
+                'title' => $title,
+                'description' => $optimizedDescription ?? $description,
                 'keywords'      => $keywords,
                 'focus_keyword' => $keywords[0] ?? '',
             ];
@@ -27,17 +29,8 @@ class SeoAiService
         }
     }
 
-    private static function generateKeywords($title, $description, $content) 
-    {
-        $prompt = "Analise o seguinte conteúdo e extraia as 5 principais palavras-chave para SEO. Retorne apenas as palavras-chave separadas por vírgula, sem números, sem pontos, sem parênteses, sem aspas:\n\nTítulo: " . $title . "\nDescrição: " . $description . "\nConteúdo: " . $content;
-        
-        $keywords = self::callMistralApi($prompt, "Você é um especialista em SEO. Sua tarefa é identificar as palavras-chave mais relevantes para otimização e em PORTUGUÊS BRASILEIRO.");
-        
-        return array_map('trim', explode(',', $keywords));
-    }
-
     private static function optimizeTitle($title) {
-        $prompt = "Otimize o seguinte título para SEO, faça ficar mais chamativo e atraente:\n\n" . $title;
+        $prompt = "Com base no seguinte texto, crie um para SEO, faça ficar mais chamativo e atraente. Retorne apenas o titulo otimizado\n\n" . $title;
         
         return self::callMistralApi($prompt, "Você é um especialista em SEO. Sua tarefa é otimizar títulos para melhorar o ranqueamento nos motores de busca, mantendo a naturalidade e atratividade e em PORTUGUÊS BRASILEIRO.");
     }
@@ -48,33 +41,29 @@ class SeoAiService
         return self::callMistralApi($prompt, "Você é um especialista em SEO. Sua tarefa é otimizar meta descrições para melhorar o CTR nos resultados de busca, mantendo a clareza e relevância e em PORTUGUÊS BRASILEIRO.");
     }
 
-    
+    private static function generateKeywords($title, $description, $content) 
+    {
+        $prompt = "Analise o seguinte conteúdo e extraia as 5 principais palavras-chave para SEO. Retorne apenas as palavras-chave separadas por vírgula, sem números, sem pontos, sem parênteses, sem aspas:\n\nTítulo: " . $title . "\nDescrição: " . $description . "\nConteúdo: " . $content;
+        
+        $keywords = self::callMistralApi($prompt, "Você é um especialista em SEO. Sua tarefa é identificar as palavras-chave mais relevantes para otimização e em PORTUGUÊS BRASILEIRO.");
+        
+        return array_map('trim', explode(',', $keywords));
+    }
 
     private static function callMistralApi($prompt, $system) {
 
-        // if(getenv('URL') == "http://rewriterai.test"){
-            $urlIa = 'http://localhost:11434/api/generate';
-            $body = array(
-                'model' => 'gemma3',
-                'system' => $system,
-                'prompt' => $prompt,
-                'stream' => false,
-                'options' => [
-                    'temperature' => 0.2,
-                    'num_predict' => 500,
-                    'repeat_penalty' => 1.3
-                ]
-            );
-        // } else {
-        //     $urlIa = 'https://rewriter.mediagrumft.com/';
-        //     $body = [
-        //         'system' => $system,
-        //         'temperature' => 0.2,
-        //         'prompt' => $prompt,
-        //     ];
-        //     $htUser = 'grumft';
-        //     $htPass = 'grumft';
-        // }
+        $urlIa = 'http://localhost:11434/api/generate';
+        $body = array(
+            'model' => 'gemma3',
+            'system' => $system,
+            'prompt' => $prompt,
+            'stream' => false,
+            'options' => [
+                'temperature' => 0.2,
+                'num_predict' => 500,
+                'repeat_penalty' => 1.3
+            ]
+        );
 
         $ch = curl_init();
         $curlOptions = [
@@ -89,10 +78,6 @@ class SeoAiService
             ],
             CURLOPT_TIMEOUT => 300
         ];
-
-        if ($urlIa === 'https://rewriter.mediagrumft.com/' && !empty($htUser) && !empty($htPass)) {
-            $curlOptions[CURLOPT_USERPWD] = "$htUser:$htPass";
-        }
 
         curl_setopt_array($ch, $curlOptions);
 
@@ -117,7 +102,7 @@ class SeoAiService
             $response = mb_convert_encoding($response, 'UTF-8', 'auto');
         }
 
-        $response = AuxService::FormatAi($response);
+        $response = FormatAi::FormatAi($response);
 
         $patterns = [ '- ', '1)-', '2)-', '3)-', '4)-', '5)-', '"', '(', ')', '1)', '2)', '3)', '4)', '5)', '1.', '2.', '3.', '4.', '5.', '1 ', '2 ', '3 ', '4 ', '5 ' ];
         $response = str_replace($patterns, '', $response);

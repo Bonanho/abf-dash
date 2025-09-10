@@ -8,8 +8,8 @@ class AuxService
 {
     public static function formatAi($response) 
     {
-        // Ensure proper UTF-8 encoding
-        if (!mb_check_encoding($response, 'UTF-8')) {
+         // Ensure proper UTF-8 encoding
+         if (!mb_check_encoding($response, 'UTF-8')) {
             $response = mb_convert_encoding($response, 'UTF-8', 'auto');
         }
 
@@ -44,8 +44,6 @@ class AuxService
         $response = preg_replace('/Cabe destacar que.*?:/i', '', $response);
         $response = preg_replace('/Vale destacar que.*?:/i', '', $response);
         $response = preg_replace('/É importante destacar que.*?:/i', '', $response);
-
-        // Remove frases introdutórias sobre o texto original
         $response = preg_replace('/O texto original é.*?:/i', '', $response);
         $response = preg_replace('/Nenhum texto encontrado.*?:/i', '', $response);
         $response = preg_replace('/A página está vazia.*?:/i', '', $response);
@@ -75,9 +73,7 @@ class AuxService
         $response = preg_replace('/O conteúdo menciona.*?:/i', '', $response);
         $response = preg_replace('/O texto menciona.*?:/i', '', $response);
         $response = preg_replace('/O parágrafo menciona.*?:/i', '', $response);
-
         $response = preg_replace('/Análise do Texto:*?:/i', '', $response);
-
         $response = preg_replace('/Não há necessidade de alteração.*?:/i', '', $response);
         $response = preg_replace('/Não é necessário fazer alterações.*?:/i', '', $response);
         $response = preg_replace('/O texto não precisa de alterações.*?:/i', '', $response);
@@ -99,15 +95,37 @@ class AuxService
         $response = preg_replace('/<strong\b[^>]*>(.*?)<\/strong>/is', '', $response);
         $response = preg_replace('/<h4\b[^>]*>(.*?)<\/h4>/is', '', $response);*/
         
+        // Remover atributos de id com aspas retas e curvas (e.g., id="...", id='...', id=”...”, id=’...’)
+        $response = preg_replace('/\s+id\s*=\s*"[^"]*"/u', '', $response);
+        $response = preg_replace("/\s+id\s*=\s*'[^']*'/u", '', $response);
+        $response = preg_replace('/\s+id\s*=\s*[“][^”]*[”]/u', '', $response);
+        $response = preg_replace('/\s+id\s*=\s*[‘][^’]*[’]/u', '', $response);
+        $response = preg_replace('/\s+align\s*=\s*"[^"]*"/u', '', $response);
+        $response = preg_replace("/\s+align\s*=\s*'[^']*'/u", '', $response);
+        $response = preg_replace('/\s+align\s*=\s*[“][^”]*[”]/u', '', $response);
+        $response = preg_replace('/\s+align\s*=\s*[‘][^’]*[’]/u', '', $response);
+
         // Remove marcadores Markdown e outros
         $response = str_replace('Saiba mais no Poder360.', "", $response); 
         $response = str_replace('Saiba mais no Poder360', "", $response); 
         $response = str_replace('“`html', "", $response); 
+        $response = str_replace('<p>&gt;', "<p>", $response); 
+        $response = str_replace('<p>>', "<p>", $response); 
+        //$response = str_replace('<h2 ', "", $response); 
         $response = str_replace('```html', "", $response); 
         $response = str_replace('```', "", $response); 
+        $response = str_replace('<li ></li>', "", $response); 
+        $response = str_replace('<p></p>', "", $response); 
+        $response = str_replace('&lt;p&gt;&lt;/p&gt;', "", $response); 
+        $response = str_replace('<ul><li></li>', "", $response); 
+        $response = str_replace('<li></li>', "", $response); 
+        $response = str_replace('<li></li></ul>', "", $response); 
         $response = str_replace('“`', "", $response); 
         $response = str_replace('h3:', "", $response); 
         $response = str_replace('h2:', "", $response); 
+        $response = str_replace('align=”center”>', "", $response); 
+        $response = str_replace('align=”CENTER”', "", $response); 
+        $response = str_replace('align="center"', "", $response); 
         $response = str_replace('**', "", $response); 
         $response = str_replace('&gt;', ">", $response); 
         $response = str_replace('&lt;', "<", $response); 
@@ -148,7 +166,7 @@ class AuxService
 
     public static function validText($text) 
     {
-        $system = "Você é um especialista em analise de textos com precisão e clareza. Siga estas regras obrigatórias:
+        $system = "Você é um especialista em analise de textos jornalisticos com precisão e clareza. Siga estas regras obrigatórias:
                 1. Analise o texto e verifique se ele está em português brasileiro.
                 2. Preserve integralmente o significado do texto original.
                 3. Não adicione exemplos, explicações ou introduções.
@@ -156,7 +174,8 @@ class AuxService
                 5. Não altere ou modifique nomes próprios.
                 6. Mantenha o código html do texto.
                 7. Caso o texto não tenha estrutura html de parágrafo, subtitulo, lista adicione para melhorar a leitura (não usar h1).
-                8. Remova menção a elementos que não existe no código como exemplo videos.";
+                8. Remova menção a elementos que não existe no código como exemplo videos.
+                9. Se necessario, melhore e aumente o texto deixando pronto para SEO.";
 
         $urlIa = 'http://localhost:11434/api/generate';
         $body = [
@@ -212,4 +231,43 @@ class AuxService
 
         return $response;
     }
+
+    /**
+     * Remove blocos HTML repetidos (p, h1-h6, li, blockquote, pre) mantendo a primeira ocorrência.
+     * Útil para eliminar repetições geradas pela origem ou pela IA.
+     */
+    private static function removeRepeatedBlocks($content) {
+        if (empty($content)) return $content;
+
+        // Divide o conteúdo em blocos começando em tags de bloco comuns
+        $blocks = preg_split('/(?=<\/(?:p|h[1-6]|li|blockquote|pre)\b)|(?=<(?:p|h[1-6]|li|blockquote|pre)\b)/iu', $content, -1, PREG_SPLIT_NO_EMPTY);
+        if ($blocks === false || count($blocks) === 0) return $content;
+
+        $seen = [];
+        $deduped = [];
+        $lastNorm = '';
+
+        foreach ($blocks as $block) {
+            $innerText = trim(strip_tags($block));
+            $normalized = mb_strtolower($innerText, 'UTF-8');
+            $normalized = preg_replace('/\s+/u', ' ', $normalized);
+            $normalized = trim($normalized);
+
+            // Ignorar blocos muito curtos ao deduplicar (ex.: títulos de uma palavra como "Leão") somente se consecutivos
+            $isShort = (mb_strlen($normalized, 'UTF-8') < 5);
+
+            if ($normalized !== '' && (isset($seen[$normalized]) || (!$isShort && $normalized === $lastNorm))) {
+                // bloco repetido → pular
+                continue;
+            }
+
+            $deduped[] = $block;
+            $seen[$normalized] = true;
+            $lastNorm = $normalized;
+        }
+
+        $joined = implode('', $deduped);
+        return $joined ?: $content;
+    }
+    
 }
