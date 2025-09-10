@@ -45,11 +45,14 @@ https://g.mediagrumft.com/wp-admin/ - ( grumft - grumft )
 cqcs@mediagrumft.com
 AfXS!0re2ZN^m6R@F$qFyrCt
 
-### Comandos
+### Instalação
 php artisan migrate
+*** Mudar na tabela migrations "2025_08_13_000002_create_initials_table" para 2
+php artisan db:seed --class=InitialSeeder ( User:super@user.com - Pass:super@123 )
 php artisan db:seed --class=CqcsSeeder
-php artisan source:validate
 
+### Comandos
+php artisan source:validate -- Valida (basicamente) os sources da CQCS e ativa ou não o SOURCE, tambem define WP ou Custom
 php artisan source:fetch    -- Busca posts nos sites fonte
 php artisan post:queue      -- Monta fila de posts Website / Source 
 php artisan post:process    -- Cópia ou Reescritas de IA ambas usam SEO
