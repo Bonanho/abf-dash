@@ -232,7 +232,31 @@ class PostPublishService
     {
         try 
         {
-            $data = file_get_contents(trim($archivo));
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => trim($archivo),
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_TIMEOUT => 300,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                CURLOPT_HTTPHEADER => [
+                    'Accept: image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+                    'Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+                    'Accept-Encoding: gzip, deflate',
+                    'Connection: keep-alive',
+                    'Cache-Control: no-cache',
+                    'Pragma: no-cache',
+                    'DNT: 1',
+                    'Upgrade-Insecure-Requests: 1',
+                ],
+                CURLOPT_ENCODING => 'gzip, deflate'
+            ]);
+            
+            $data = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
             if ($data === false) return null;
 
             $curl = curl_init();
