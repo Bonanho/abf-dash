@@ -90,7 +90,7 @@ class AbfSeeder extends Seeder
          Website::insert([
             [
                 'company_id'=>$company, 'name'=>$name, 'url'=>$url, 'category_id'=>$category, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date,
-                'config'=>'doc{"siteMap":"wp-sitemap.xml","wpUser":"'.$user.'","wpPass":"'.$pass.'"}' 
+                'config'=>'{"siteMap":"wp-sitemap.xml","wpUser":"'.$user.'","wpPass":"'.$pass.'"}' 
             ],
         ]);
     }
