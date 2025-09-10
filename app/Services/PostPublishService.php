@@ -123,7 +123,7 @@ class PostPublishService
         });
         $keyWords = array_values($keyWords);
 
-        $optimizedContent = self::optimizeContent( $postContent, $keyWords);
+        $optimizedContent = self::optimizeContent( $postContent, $keyWords, $seoData);
 
         if( $this->sourceLink ){
             $sourceLink = '<a href="'.$this->sourceLink.'" rel="noopener nofollow noreferrer" target="_blank">'.$this->sourceCitation.'</a>';
@@ -297,7 +297,7 @@ class PostPublishService
         }
     }
 
-    private function optimizeContent( $content, $postKeyWords ) 
+    private function optimizeContent( $content, $postKeyWords, $seoData ) 
     {
         try 
         {
@@ -343,7 +343,7 @@ class PostPublishService
             }
             
             $linkCount = 0;           
-            $titleWords = explode(' ', $title);
+            $titleWords = explode(' ', $seoData['title']);
             foreach ($titleWords as $word) {
                 if ($linkCount >= 3) break;
                 $wordFormat = removeAccents(strtolower($word));
