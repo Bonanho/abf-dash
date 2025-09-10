@@ -5,8 +5,10 @@
 - OK - Coniguração de Website / Sources ( Reescrita S/N ), ( Status Default de post ), ( Citação Sim / Sim com Link / Nao )
 - OK - Ajustar comando de reescrita usando parametro ( Reescrita S/N  )
 - Filtros de busca nas telas
+- modal para editar config de website/fonte
 - Mostrar os arquivos de log
-- Melhorar front
+- Melhorias de front
+- Ajustar titulo de pagina na Header
 - Contabilizar erros de SOURCE para inativa-los após X ocorrencias
 - Rever todos os fluxos de comandos ( TryCatch ) para identificar erros e aproveita-los p corrigir fluxo
 - Link final do post publicado ( tabela ja ta pronta )
@@ -58,3 +60,107 @@ php artisan post:publish    -- Define Categoria, Sobe Imagem, Add Autor/Link, Pu
 10 * * * * php /var/www/html/cqcs-dash/artisan post:queue >> /tmp/cqcs_post-queue
 15 * * * * php /var/www/html/cqcs-dash/artisan post:process >> /tmp/cqcs_post-process
 */10 * * * * php /var/www/html/cqcs-dash/artisan post:publish --limit >> /tmp/cqcs_post-publish
+
+### NGINX 
+server{
+    listen 80;
+
+    server_name abf-dash.loc;
+
+    root /home/bonanho/Works/Abf/abf-dash/public;
+    index index.php index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+    }
+}
+
+### Fontes CQCS
+Sites que precisamos reescrever
+Estadao
+Valor econômico 
+Sonho Seguro
+
+
+Sites e palavras que costumamos clipar:
+Seguem palavras e sites para clipar:
+Mercado de seguro
+Mercado segurador
+setor de seguros
+setor segurador
+Susep
+Seguro
+Seguros
+Segurado
+Segurados
+Detran
+Seguro Saude
+Seguradora
+Seguradoras
+DPVAT
+Sinistro
+Apolice
+Golpe do Seguro
+Corretor
+PrevidÍncia privada
+Seguro pirata
+
+Di·rio oficial
+http://www.seguros.inf.br/index.php
+
+* CNseg - http://www.cnseg.org.br/cnseg/home.html
+
+* Susep - http://www.susep.gov.br/
+
+* Fenacor - http://www.fenacor.com.br/
+
+* Escola Nacional de Seguros - http://www.funenseg.org.br/
+
+* Câmara dos Deputados - http://www2.camara.leg.br/camaranoticias/
+
+* ANS - http://www.ans.gov.br/
+
+* Revista ApÛlice - http://revistaapolice.com.br/
+
+* Revista Cobertura - http://www.revistacobertura.com.br
+
+* Monitor Mercantil - http://www.monitormercantil.com.br/
+
+* Exame - http://exame.abril.com.br/
+
+* …poca - http://epoca.globo.com/
+
+* Estad„o - http://www.estadao.com.br/
+
+* Folha - http://www.folha.com.br/
+
+* O Globo - http://oglobo.globo.com/
+
+* Jornal do ComÈrcio - http://jcrs.uol.com.br/
+
+* Zero Hora - http://zh.clicrbs.com.br/rs/
+
+* Correio do Povo - http://www.correiodopovo.com.br/
+
+* Di·rio Oficial da Uni„o - http://portal.in.gov.br/
+
+Sindseg-SP http://www.sindsegsp.org.br/site/
+
+Sincor-SP  http://www.sincor.org.br/
+
+SindMG - https://sindsegmd.com.br/
+
+https://capitolio.com.br
+
+Sindseg RS - http://www.sindsegrs.com.br/
+Sincor RS - http://www.sincorrs.com/
+http://www.seguros.inf.br/
+http://sulamerica.comunique-se.com.br/sulamerica/
+http://riscosegurobrasil.com/
+
+http://www.praqueseguro.com.br/2018/01/o-chato-do-corretor.html
