@@ -28,8 +28,6 @@ class PostFetchService
     ### GET NEW POSTS ###
     public function fetchValidation()
     {
-        // $data = $this->fetchNewPost();
-
         $apiUrl = $this->apiUrlBasePost . "?per_page=1" ;
 
         $ch = curl_init();
@@ -57,8 +55,8 @@ class PostFetchService
         curl_close($ch);
 
         $data = json_decode($response);
-        
-        if( $data ) 
+
+        if( is_array($data) && isset($data[0]) && is_object($data[0]) && $data[0]->id  ) 
         {
             $this->source->status_id = Source::STATUS_ACTIVE;
             $this->source->save();
@@ -66,8 +64,8 @@ class PostFetchService
         else
         {
             $this->source->status_id = Source::STATUS_INVALID;
-            $this->source->type_id   = Source::TYPE_CUSTOM;
-            $this->source->doc       = "{'test-url':$apiUrl}";
+            // $this->source->type_id   = Source::TYPE_CUSTOM;
+            $this->source->doc       = "{'test-url':$apiUrl,'result':$response}";
             $this->source->save();
 
             echo "\n".$apiUrl."\n";
