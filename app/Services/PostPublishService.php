@@ -36,7 +36,7 @@ class PostPublishService
 
     public function run() 
     {
-        $this->wPost->setStatus( WebsitePost::STATUS_PROCESSING);
+        // $this->wPost->setStatus( WebsitePost::STATUS_PROCESSING);
         
         $title       = $this->wPost->post_title;
         $description = $this->wPost->post_description;
@@ -105,7 +105,7 @@ class PostPublishService
 
     protected function defineImage()
     {
-        if( !$this->wPost->website_image ){
+        if( !$this->wPost->post_image ){
             return 0;
         }
         if( !$this->wPost->website_image_id )
