@@ -25,6 +25,8 @@ CQCS ( estes apesar de passar no validate dão erro )
 -- UPDATE sources SET doc = '{"erro": "Erro no source fetch"}', status_id = -2 WHERE id IN (5,17,23);
 -- UPDATE sources SET doc = '{"erro": "Erro no source fetch DATA"}', status_id = -2 WHERE id IN (24);
 
+### Server
+hetz - bonanho - Dv?LXJ_+gLp6.4J
 
 ### Ollama
 https://ollama.com/download/linux

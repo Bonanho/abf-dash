@@ -22,7 +22,8 @@ Route::get('/', function () {
 # Dashboard
 Route::prefix('dashboard')->middleware(['auth', 'verified'])->group( function()
 {
-    Route::get('/',[Dashboard::class, 'index'])->name('dashboard');
+    Route::get('list',[Websites::class, 'index'])->name('dashboard');
+    // Route::get('/',[Dashboard::class, 'index'])->name('dashboard');
 });
 
 # Website
