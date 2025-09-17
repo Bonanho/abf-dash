@@ -36,7 +36,7 @@ class PostPublishService
 
     public function run() 
     {
-        // $this->wPost->setStatus( WebsitePost::STATUS_PROCESSING);
+        $this->wPost->setStatus( WebsitePost::STATUS_PROCESSING);
         
         $title       = $this->wPost->post_title;
         $description = $this->wPost->post_description;
@@ -63,7 +63,11 @@ class PostPublishService
     ##################
     # DEFINE METHODS #
     protected function defineCategory( $postCategory )
-    {   
+    {
+        if( $postCategory == 1 ){
+            return (int) $postCategory;
+        }
+
         $categorySlug = removeAccents( $postCategory );
         
         # Verifica se ja existe

@@ -44,9 +44,8 @@ class SourcePost extends Model
 
     public static function register( $source, $postData )
     {
-        $queueExists = SourcePost::where("source_id", $source->id)->where("post_origin_id",$postData->id)->count();
-
-        if( $queueExists ){
+        $exists = SourcePost::where("source_id", $source->id)->where("post_origin_id",$postData->id)->count();
+        if( $exists ){
             return null;
         }
 
@@ -56,6 +55,26 @@ class SourcePost extends Model
         $sourcePost->post_origin_id = $postData->id;
         $sourcePost->endpoint       = $postData->endpoint;
         $sourcePost->post_data      = $postData->data;
+
+        $sourcePost->save();
+
+        return $sourcePost;
+    }
+
+    public static function registerCustom( $source, $postData )
+    {
+        $exists = SourcePost::where("source_id", $source->id)->where("endpoint",$postData->url_original)->count();
+        if( $exists ){
+            return null;
+        }
+
+        $sourcePost = new SourcePost();
+        
+        $sourcePost->source_id      = $source->id;
+        $sourcePost->post_origin_id = $postData->post_id;
+        $sourcePost->endpoint       = $postData->url_original;
+        $sourcePost->doc            = $postData;
+        $sourcePost->status_id      = SourcePost::STATUS_DONE;
 
         $sourcePost->save();
 
