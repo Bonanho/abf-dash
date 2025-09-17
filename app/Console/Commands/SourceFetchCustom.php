@@ -25,7 +25,7 @@ class SourceFetch extends Command
         $this->line("********** SourceFetch - " . $printDate . " **********");
 
         // $sources = Source::getSourcesToFetchPosts();
-        $sources = Source::whereIn("id",[4,14])->get();
+        $sources = Source::whereIn("id",[2])->get(); // 4, 14
 
         foreach( $sources as $source )
         {

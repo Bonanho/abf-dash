@@ -29,13 +29,46 @@ class CustomFetchService
 
     ######################
     ### CUSTOM METHODS ###
+    ######################
     
-    // Diario Oficial
+    ##################
+    ## Valor Economico
+    public function fetchSource_2( $crawler )
+    {
+        $node = $crawler->filter('.highlight__content a')->first();
+
+        if ($node->count()) 
+        {
+            $titulo = trim($node->text());
+            $link   = $node->attr('href');
+
+            // Link pode ser relativo; garante URL absoluta
+            if (strpos($link, 'http') !== 0) {
+                $link = $this->baseUrl . $link;
+            }
+        }
+
+        ### Pega dados da materia
+        $detailResponse = Http::get($link);
+
+        if ($detailResponse->ok()) 
+        {
+            $crawler = new Crawler($detailResponse->body(), $link);
+
+            // Título
+            $this->result->title = $crawler->filter('h1.content-head__title')->first()->text();
+            $container = $crawler->filter('div.no-paywall');
+            dd($this->result->title, $container);
+            
+            return $this->result;
+        }
+    }
+
+    #################
+    ## Diario Oficial
     public function fetchSource_4( $crawler )
     {
-        ####################
         ## Pega materia nova
-        
         $candidates = $crawler->filter('div.col-md-6.mb-3')->reduce(function (Crawler $node, $i) {
             try {
                 return trim($node->filter('h2')->text()) === 'Destaque';
@@ -66,9 +99,7 @@ class CustomFetchService
 
         $this->result->url_original = $href;
 
-        #########################
         ### Pega dados da materia
-
         $detailResponse = Http::get($href);
 
         if ($detailResponse->ok()) {
@@ -95,12 +126,11 @@ class CustomFetchService
         }
     }
 
+    #####################
     ## Jornal do Comercio
     public function fetchSource_14( $crawler )
     {
-        ####################
         ## Pega materia nova
-        
         $nodes = $crawler->filter('main a[href*="jornaldocomercio.com"], main a[href*="/economia/"]');
 
         if ($nodes->count()) {
@@ -114,9 +144,7 @@ class CustomFetchService
 
         $this->result->url_original = $href;
         
-        #########################
         ### Pega dados da materia
-
         $detailResponse = Http::get($href);
 
         if ($detailResponse->ok()) {
