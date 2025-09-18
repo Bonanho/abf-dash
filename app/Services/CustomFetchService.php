@@ -185,14 +185,14 @@ class CustomFetchService
     ## Estadão
     public function fetchSource_1( $crawler )
     {
-        $this->result->title = $crawler->filter('.container-news-informs h1')->first()->text();
-        $this->result->image = $crawler->filterXPath('//meta[@property="og:image"]')->attr('content');
+        $this->result->title       = $crawler->filter('.container-news-informs h1')->first()->text();
+        $this->result->image       = $crawler->filterXPath('//meta[@property="og:image"]')->attr('content');
         $this->result->description = $crawler->filterXPath('//meta[@property="og:description"]')->attr('content');
 
         $container = $crawler->filter('#content')->first()->html();
 
-        $this->result->content = $this->returnAI( $container );
-        $this->result->rewrited.= "content,";
+        $this->result->content   = $this->returnAI( $container );
+        $this->result->rewrited .= "title,description,content,";
 
         return $this->result;
     }

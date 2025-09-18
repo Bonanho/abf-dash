@@ -47,15 +47,30 @@ class PostProcessService
         elseif( $websitePostQueue->type_id == WebsitePostQueue::TYPE_REWRITE )
         {
             # Title
-            echo "title - ";
-            $title = $this->rewriteAi( $postParams->title, 'title' );
-            $processedParams->title = substr($title, -1) == '.' ? substr($title, 0, -1) : $title;
+            if( strpos($postParams->rewrited, 'title')  ) {
+                echo "title rewrited! - ";
+                $processedParams->title = $postParams->title;
+            } 
+            else 
+            {
+                echo "title - ";
+                $title = $this->rewriteAi( $postParams->title, 'title' );
+                $processedParams->title = substr($title, -1) == '.' ? substr($title, 0, -1) : $title;
+            }
             
+
             # Description
-            echo "description - ";
-            $processedParams->description = $this->rewriteAi( $postParams->description );
-            if (mb_strlen($processedParams->description) > 155) {
-                $processedParams->description = mb_substr($processedParams->description, 0, 152) . '...';
+            if( strpos($postParams->rewrited, 'description')  ) {
+                echo "description rewrited! - ";
+                $processedParams->description = $postParams->description;
+            } 
+            else 
+            {
+                echo "description - ";
+                $processedParams->description = $this->rewriteAi( $postParams->description );
+                if (mb_strlen($processedParams->description) > 155) {
+                    $processedParams->description = mb_substr($processedParams->description, 0, 152) . '...';
+                }
             }
             
             # Content
