@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\SourcePost;
+use DOMDocument;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -146,21 +147,51 @@ class CustomFetchService
         return $url;
     }
 
+    public function cleanHtml( $htmlString )
+    {
+        if (!preg_match('/<html>/i', $htmlString)) {
+            $htmlString = '<!DOCTYPE html><html><body>' . $htmlString . '</body></html>';
+        }
+
+        $dom = new DOMDocument();
+
+        // Carrega a string HTML. O '@' suprime avisos de HTML malformado.
+        @$dom->loadHTML($htmlString, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
+        // Pega todos os elementos div
+        $div_elements = $dom->getElementsByTagName('div');
+
+        // Itera sobre cada elemento div
+        foreach ($div_elements as $div) {
+            // Lista de atributos a serem removidos
+            $attributes_to_remove = ['class', 'id', 'style'];
+
+            // Itera sobre a lista de atributos
+            foreach ($attributes_to_remove as $attribute) {
+                // Verifica se o atributo existe e o remove
+                if ($div->hasAttribute($attribute)) {
+                    $div->removeAttribute($attribute);
+                }
+            }
+        }
+
+        // Salva o HTML modificado
+        $cleanHtml = $dom->saveHTML();
+
+        return $cleanHtml;
+    }
+
     ##########
     ## Estadão
     public function fetchSource_1( $crawler )
     {
-        $node = $crawler->filter('.highlight__content a')->first();
+        $node = $crawler->filter('.info a')->first();
 
         if ($node->count()) 
         {
             $titulo = trim($node->text());
             $link   = $node->attr('href');
-
-            // Link pode ser relativo; garante URL absoluta
-            if (strpos($link, 'http') !== 0) {
-                $link = $this->baseUrl . $link;
-            }
+            $link = $this->definePostUrl($link);
         }
 
         $this->postExists( $this->source->id, $link );
@@ -174,14 +205,13 @@ class CustomFetchService
         {
             $crawler = new Crawler($detailResponse->body(), $link);
 
-            // $this->result->title = $crawler->filter('h1.content-head__title')->first()->text();
-            // $this->result->image = $crawler->filterXPath('//meta[@property="og:image"]')->attr('content');
-
-            $container = $crawler->filter('div.no-paywall')->first()->html();
-
-            $content = strip_tags($container);
-
-            $this->result->content = $this->returnAI( $content );
+            $this->result->title = $crawler->filter('.container-news-informs h1')->first()->text();
+            $this->result->image = $crawler->filterXPath('//meta[@property="og:image"]')->attr('content');
+            $this->result->description = $crawler->filterXPath('//meta[@property="og:description"]')->attr('content');
+    
+            $container = $crawler->filter('#content')->first()->html();
+            
+            $this->result->content = $this->returnAI( $container );
             $this->result->rewrited.= "content,";
 
             return $this->result;
@@ -214,7 +244,7 @@ class CustomFetchService
             // Título
             $this->result->title = $crawler->filter('h1.content-head__title')->first()->text();
             $this->result->image = $crawler->filterXPath('//meta[@property="og:image"]')->attr('content');
-            dd($this->result);
+            // dd($this->result);
 
             $container = $crawler->filter('div.no-paywall')->first()->html();
 
