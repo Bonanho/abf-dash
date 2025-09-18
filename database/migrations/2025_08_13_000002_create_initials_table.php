@@ -97,6 +97,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('url');
             $table->integer('type_id')->default(1);
+            $table->json('template')->nullable();
             $table->json('doc')->nullable();
             $table->tinyinteger('status_id')->default(0);
             $table->timestamps();

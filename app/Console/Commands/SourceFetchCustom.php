@@ -41,18 +41,42 @@ class SourceFetch extends Command
                     $this->error("Erro ao acessar {$baseUrl}: " . $response->status());
                 }
                 
+                
+
                 $crawler = new Crawler($response->body(), $baseUrl);
 
-                $customFetch = new CustomFetchService( $source );
-                
-                $methodName = "fetchSource_".$source->id;
-                $postData = $customFetch->$methodName( $crawler );
+                $node = $crawler->filter($source->template->homeNew)->first();
 
-                $sourcePost = SourcePost::registerCustom( $source, $postData);
-                if( $sourcePost ){
-                    echo "OK \n";
-                } else {
-                    echo "já existe \n";
+                if ($node->count()) 
+                {
+                    $newPostUrl   = $node->attr('href');
+                    if (strpos($newPostUrl, 'http') !== 0) {
+                        // $newPostUrl = $this->baseUrl . $newPostUrl;
+                        $newPostUrl = rtrim($baseUrl, '/') . '/' . ltrim($newPostUrl, '/');
+                        echo " ajusout-URL ";
+                    }
+                }
+
+                $this->postExists( $source->id, $newPostUrl );
+
+                $crawlerData = Http::get($newPostUrl);
+                if ($crawlerData->ok()) 
+                {
+                    $crawler = new Crawler($crawlerData->body(), $newPostUrl);
+
+                    $customFetch = new CustomFetchService( $source );
+                    
+                    $methodName = "fetchSource_".$source->id;
+                    $postData = $customFetch->$methodName( $crawler );
+
+                    $postData->url_original = $newPostUrl;
+                    
+                    $sourcePost = SourcePost::registerCustom( $source, $postData);
+                    if( $sourcePost ){
+                        echo "OK \n";
+                    } else {
+                        echo "já existe \n";
+                    }
                 }
             }
             catch(\Exception $err)
@@ -65,4 +89,11 @@ class SourceFetch extends Command
         $this->line("\n********** SourceFetch - FIM - " . $printDate . " **********\n");
     }
 
+    public function postExists( $sourceId, $url )
+    {
+        $exists = SourcePost::where("source_id",$sourceId)->where("endpoint",$url)->count();
+        if( $exists ){
+            throw new \Exception("Matéria já existe");
+        }
+    }
 }

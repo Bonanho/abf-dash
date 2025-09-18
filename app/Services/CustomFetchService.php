@@ -185,37 +185,16 @@ class CustomFetchService
     ## Estadão
     public function fetchSource_1( $crawler )
     {
-        $node = $crawler->filter('.info a')->first();
+        $this->result->title = $crawler->filter('.container-news-informs h1')->first()->text();
+        $this->result->image = $crawler->filterXPath('//meta[@property="og:image"]')->attr('content');
+        $this->result->description = $crawler->filterXPath('//meta[@property="og:description"]')->attr('content');
 
-        if ($node->count()) 
-        {
-            $titulo = trim($node->text());
-            $link   = $node->attr('href');
-            $link = $this->definePostUrl($link);
-        }
+        $container = $crawler->filter('#content')->first()->html();
 
-        $this->postExists( $this->source->id, $link );
+        $this->result->content = $this->returnAI( $container );
+        $this->result->rewrited.= "content,";
 
-        $this->result->url_original = $link;
-
-        ### Pega dados da materia
-        $detailResponse = Http::get($link);
-
-        if ($detailResponse->ok()) 
-        {
-            $crawler = new Crawler($detailResponse->body(), $link);
-
-            $this->result->title = $crawler->filter('.container-news-informs h1')->first()->text();
-            $this->result->image = $crawler->filterXPath('//meta[@property="og:image"]')->attr('content');
-            $this->result->description = $crawler->filterXPath('//meta[@property="og:description"]')->attr('content');
-    
-            $container = $crawler->filter('#content')->first()->html();
-            
-            $this->result->content = $this->returnAI( $container );
-            $this->result->rewrited.= "content,";
-
-            return $this->result;
-        }
+        return $this->result;
     }
 
     ##################

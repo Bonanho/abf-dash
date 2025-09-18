@@ -4,6 +4,7 @@
 - OK - Tabelas com dataTable ( filtrar e paginação )
 - OK - Coniguração de Website / Sources ( Reescrita S/N ), ( Status Default de post ), ( Citação Sim / Sim com Link / Nao )
 - OK - Ajustar comando de reescrita usando parametro ( Reescrita S/N  )
+- Testes de IA GPT
 - Filtros de busca nas telas
 - modal para editar config de website/fonte
 - Mostrar os arquivos de log

@@ -11,7 +11,8 @@ class Source extends Model
     protected $casts = [
         'created_at' => 'datetime:Y-m-d H:i:s',
         'updated_at' => 'datetime:Y-m-d H:i:s',
-        'doc'    => 'object',
+        'doc'        => 'object',
+        'template'   => 'object',
     ];
 
     CONST STATUS_ACTIVE   = 1;
