@@ -59,12 +59,21 @@ class PostProcessService
             }
             
             # Content
-            echo "content - ";
-            $processedParams->content = $this->rewriteAi( $postParams->content, 'content' );
-            echo "content validation - ";
-            $processedParams->content = AuxService::validText( $processedParams->content );
-            echo "removendo blocos repetidos - ";
-            $processedParams->content = AuxService::removeRepeatedBlocks( $processedParams->content );
+            if( strpos($postParams->rewrited, 'content')  ) {
+                echo "content rewrited! - ";
+                $processedParams->content = $postParams->content;
+            } 
+            else 
+            {
+                echo "content rewrite - ";
+                $processedParams->content = $this->rewriteAi( $postParams->content, 'content' );
+                echo "content validation - ";
+                $processedParams->content = AuxService::validText( $processedParams->content );
+                echo "removendo blocos repetidos - ";
+                $processedParams->content = AuxService::removeRepeatedBlocks( $processedParams->content );
+            }
+            
+            
         }
         
         # Palavras Chave

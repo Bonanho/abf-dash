@@ -25,32 +25,38 @@ class SourceFetch extends Command
         $this->line("********** SourceFetch - " . $printDate . " **********");
 
         // $sources = Source::getSourcesToFetchPosts();
-        $sources = Source::whereIn("id",[2])->get(); // 4, 14
+        $sources = Source::whereIn("id",[2,4,14])->get();
 
         foreach( $sources as $source )
         {
             echo "\nSourceId: $source->id - Nome: $source->name = ";
 
-            $baseUrl = $source->url;
-            $response = Http::get($baseUrl);
-            
-            if (!$response->ok()) {
-                $this->error("Erro ao acessar {$baseUrl}: " . $response->status());
-                return 1;
+            try
+            {  
+                $baseUrl = $source->url;
+                $response = Http::get($baseUrl);
+                
+                if (!$response->ok()) {
+                    $this->error("Erro ao acessar {$baseUrl}: " . $response->status());
+                }
+                
+                $crawler = new Crawler($response->body(), $baseUrl);
+
+                $customFetch = new CustomFetchService( $source );
+                
+                $methodName = "fetchSource_".$source->id;
+                $postData = $customFetch->$methodName( $crawler );
+
+                $sourcePost = SourcePost::registerCustom( $source, $postData);
+                if( $sourcePost ){
+                    echo "OK \n";
+                } else {
+                    echo "já existe \n";
+                }
             }
-            
-            $crawler = new Crawler($response->body(), $baseUrl);
-
-            $customFetch = new CustomFetchService( $source );
-            
-            $methodName = "fetchSource_".$source->id;
-            $postData = $customFetch->$methodName( $crawler );
-
-            $sourcePost = SourcePost::registerCustom( $source, $postData);
-            if( $sourcePost ){
-                echo "OK \n";
-            } else {
-                echo "já existe \n";
+            catch(\Exception $err)
+            {
+                echo("Error PostFetch CUSTOM: " . errorMessage($err) . "\n\n");
             }
         }
             

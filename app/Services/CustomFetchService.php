@@ -2,16 +2,19 @@
 
 namespace App\Services;
 
+use App\Models\SourcePost;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\DomCrawler\Crawler;
 
 class CustomFetchService 
 {
+    public $source;
     public $baseUrl;
     public $result;
 
     public function __construct( $source )
     {
+        $this->source = $source;
         $this->baseUrl = $source->url;
         $this->result = (object) [
             "sourceId"      => $source->id,
@@ -19,6 +22,7 @@ class CustomFetchService
             "content"       => "",
             "image"         => "",
             "url_original"  => "",
+            "rewrited"      => "rewrited,",
 
             "image_caption" => "",
             "description"   => "",
@@ -31,9 +35,120 @@ class CustomFetchService
     ### CUSTOM METHODS ###
     ######################
     
-    ##################
-    ## Valor Economico
-    public function fetchSource_2( $crawler )
+    public function returnAI( $text ) 
+    {
+        $maxTokens = (int) (strlen($text) * 1.5);
+
+        $urlIa = "https://api.openai.com/v1/chat/completions";
+        // $body = [
+        //     'model' => 'gpt-4o-mini',
+        //     'messages' => [
+        //         [
+        //             'role' => 'system',
+        //             'content' => 'Você é um jornalista experiente especializado em SEO. Somente o texto formatado com paragrafos, titulos e subtitulos, remova classes e html desnecesarios, assim como referencias a publicidade.'
+        //         ],
+        //         [
+        //             'role' => 'user',
+        //             'content' => 'Reescreva e otimize a matéria com base no texto desse html, desconsiderando possiveis códigos fonte e javascript, retorne apenas o texto alterado: '.$text
+        //         ]
+        //     ],
+        //     'temperature' => 0.2,
+        //     'max_tokens' => $maxTokens
+        // ];
+
+        $body = [
+            'model' => 'gpt-4o-mini',
+            'messages' => [
+                [
+                    'role' => 'system',
+                    'content' => "Você é um jornalista e editor de texto, especialista em SEO.
+                        Sua tarefa:
+                        1. Identificar e extrair apenas o conteúdo principal da matéria jornalística a partir de um HTML completo.
+                        2. Ignorar completamente qualquer código-fonte, JavaScript, menus, anúncios, rodapés ou outros elementos que não façam parte da notícia.
+                        3. Reescrever e otimizar o texto para torná-lo claro e coeso, mantendo os fatos originais.
+                        4. Retornar **somente o texto limpo**, formatado com títulos e parágrafos em português (pode usar Markdown, por exemplo '##' para títulos)."
+                ],
+                [
+                    'role' => 'user',
+                    'content' => "HTML da página:\n\n" . $text
+                ]
+            ],
+            'temperature' => 0.2,
+            'max_tokens' => $maxTokens
+        ];
+
+        $ch = curl_init();
+        $curlOptions = [
+            CURLOPT_URL => $urlIa,
+            CURLOPT_POST => 1,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POSTFIELDS => json_encode($body, JSON_UNESCAPED_UNICODE),
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'Authorization: Bearer '.env("AI_TOKEN").''
+            ],
+            CURLOPT_TIMEOUT => 300
+        ];
+
+        curl_setopt_array($ch, $curlOptions);
+
+        $response = curl_exec($ch);
+
+        //var_dump($response);
+        if (curl_errno($ch)) {
+            curl_close($ch);
+            return $text;
+        }
+        
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($httpCode !== 200) {
+            echo "Erro HTTP: " . $httpCode . "\n";
+            echo "Resposta: " . $response . "\n";
+            return $text;
+        }
+
+        $texto = json_decode($response, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            echo "Erro JSON: " . json_last_error_msg() . "\n";
+            echo "Resposta: " . $response . "\n";
+            return $text;
+        }
+
+        //echo strip_tags($text)."<br><hr>";
+        //dd($texto);
+
+        if (empty(trim($texto['choices'][0]['message']['content']))) {
+            echo "Resposta vazia da API\n";
+            return $text;
+        }
+        
+        return $texto['choices'][0]['message']['content'];
+    }
+
+    public function postExists( $sourceId, $url )
+    {
+        $exists = SourcePost::where("source_id",$sourceId)->where("endpoint",$url)->count();
+        if( $exists ){
+            throw new \Exception("Matéria já existe");
+        }
+    }
+
+    public function definePostUrl( $url )
+    {
+        if (strpos($url, 'http') !== 0) {
+            // $url = $this->baseUrl . $url;
+            $url = rtrim($this->baseUrl, '/') . '/' . ltrim($url, '/');
+            echo " ajusout-URL ";
+        }
+        return $url;
+    }
+
+    ##########
+    ## Estadão
+    public function fetchSource_1( $crawler )
     {
         $node = $crawler->filter('.highlight__content a')->first();
 
@@ -48,6 +163,47 @@ class CustomFetchService
             }
         }
 
+        $this->postExists( $this->source->id, $link );
+
+        $this->result->url_original = $link;
+
+        ### Pega dados da materia
+        $detailResponse = Http::get($link);
+
+        if ($detailResponse->ok()) 
+        {
+            $crawler = new Crawler($detailResponse->body(), $link);
+
+            // $this->result->title = $crawler->filter('h1.content-head__title')->first()->text();
+            // $this->result->image = $crawler->filterXPath('//meta[@property="og:image"]')->attr('content');
+
+            $container = $crawler->filter('div.no-paywall')->first()->html();
+
+            $content = strip_tags($container);
+
+            $this->result->content = $this->returnAI( $content );
+            $this->result->rewrited.= "content,";
+
+            return $this->result;
+        }
+    }
+
+    ##################
+    ## Valor Economico
+    public function fetchSource_2( $crawler )
+    {
+        $node = $crawler->filter('[class*="highlight"][class*="content"] a')->first();
+
+        if ($node->count()) 
+        {
+            $link = $node->attr('href');
+            $link = $this->definePostUrl($link);
+        }
+
+        $this->postExists( $this->source->id, $link );
+
+        $this->result->url_original = $link;
+
         ### Pega dados da materia
         $detailResponse = Http::get($link);
 
@@ -57,13 +213,20 @@ class CustomFetchService
 
             // Título
             $this->result->title = $crawler->filter('h1.content-head__title')->first()->text();
-            $container = $crawler->filter('div.no-paywall');
-            dd($this->result->title, $container);
-            
+            $this->result->image = $crawler->filterXPath('//meta[@property="og:image"]')->attr('content');
+            dd($this->result);
+
+            $container = $crawler->filter('div.no-paywall')->first()->html();
+
+            $content = strip_tags($container);
+
+            $this->result->content = $this->returnAI( $content );
+            $this->result->rewrited.= "content,";
+
             return $this->result;
         }
     }
-
+    
     #################
     ## Diario Oficial
     public function fetchSource_4( $crawler )
@@ -91,11 +254,11 @@ class CustomFetchService
 
         $a = $block->filter('a.legenda')->first();
         $title = trim($a->text());
-        $href  = trim($a->attr('href'));
 
-        if (strpos($href, 'http') !== 0) {
-            $href = rtrim($this->baseUrl, '/') . '/' . ltrim($href, '/');
-        }
+        $href  = trim($a->attr('href'));
+        $href = $this->definePostUrl($href);
+
+        $this->postExists( $this->source->id, $href );
 
         $this->result->url_original = $href;
 
@@ -135,12 +298,10 @@ class CustomFetchService
 
         if ($nodes->count()) {
             $href = $nodes->first()->attr('href');
-
-            // torna absoluto se for relativo
-            if (strpos($href, 'http') !== 0) {
-                $href = rtrim('http://jcrs.uol.com.br', '/') . '/' . ltrim($href, '/');
-            }
+            $href = $this->definePostUrl($href);
         }
+
+        $this->postExists( $this->source->id, $href );
 
         $this->result->url_original = $href;
         
