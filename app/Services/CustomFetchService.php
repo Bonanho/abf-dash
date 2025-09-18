@@ -300,7 +300,7 @@ class CustomFetchService
 
     #####################
     ## Jornal do Comercio
-    public function fetchSource_14( $crawler )
+    public function fetchSource_5( $crawler )
     {
         ## Pega materia nova
         $nodes = $crawler->filter('main a[href*="jornaldocomercio.com"], main a[href*="/economia/"]');
@@ -342,6 +342,59 @@ class CustomFetchService
                     if ($dom && $dom->parentNode) {
                         $dom->parentNode->removeChild($dom);
                     }
+                }
+            });
+
+            // coleta todos os parágrafos e divs com conteúdo relevante
+            $parts = $container->filter('p, div')->each(function (Crawler $n) {
+                $t = trim($n->text());
+                if (!$t) return null;
+                if (mb_strlen($t) < 30) return null; // ignora textos curtos
+                if (preg_match('/^LEIA\b/i', $t)) return null; // ignora "LEIA TAMBÉM"
+                return $t;
+            });
+
+            $parts = array_values(array_filter($parts));
+            $this->result->content = implode("\n\n", $parts);
+
+            return $this->result;
+        }
+        
+    }
+
+    #####################
+    ## Exame - https://exame.com/
+    public function fetchSource_6( $crawler )
+    {
+        ## Pega materia nova
+        $nodes = $crawler->filter('#highlights > div.col-span-12.relative.grid.grid-cols-12.gap-3.px-0.lg\:px-0 > div:nth-child(2) > div > div:nth-child(1) > div > a');
+
+        if ($nodes->count()) {
+            $href = $nodes->first()->attr('href');
+            $href = $this->definePostUrl($href);
+        }
+
+        $this->postExists( $this->source->id, $href );
+
+        $this->result->url_original = $href;
+        
+        ### Pega dados da materia
+        $detailResponse = Http::get($href);
+
+        if ($detailResponse->ok()) {
+            $crawler = new Crawler($detailResponse->body(), $href);
+
+            $this->result->title = $crawler->filter('h1')->first()->text();
+            $this->result->image = $crawler->filterXPath('//meta[@property="og:image"]')->attr('content');
+
+            // Conteúdo            
+            $container = $crawler->filter('#news-body')->first();
+
+            // remove nós indesejados (ads, paywall e "LEIA TAMBÉM")
+            $container->filter('#exm-see-also')->each(function (Crawler $node) {
+                $dom = $node->getNode(0);
+                if ($dom && $dom->parentNode) {
+                    $dom->parentNode->removeChild($dom);
                 }
             });
 
