@@ -110,17 +110,26 @@ class PostPublishService
     protected function defineImage()
     {
         if( !$this->wPost->post_image ){
-            return 0;
+            echo "Nenhuma imagem fornecida - continuando sem imagem\n";
+            return null;
         }
-        if( !$this->wPost->website_image_id )
-        {
-            $url = $this->websiteUrl . 'wp-json/wp/v2/media';
-            $this->wPost->website_image_id = ( self::uploadFile($url, $this->wPost->post_image, $this->wPost->post_image_caption) ) ?? $this->defaultImageId;
-
+        
+        if( $this->wPost->website_image_id ) {
+            return $this->wPost->website_image_id;
+        }
+        
+        $url = $this->websiteUrl . 'wp-json/wp/v2/media';
+        $uploadedImageId = self::uploadFile($url, $this->wPost->post_image, $this->wPost->post_image_caption);
+        
+        if( $uploadedImageId ) {
+            $this->wPost->website_image_id = $uploadedImageId;
             $this->wPost->save();
+            echo "Imagem enviada com sucesso - ID: " . $uploadedImageId . "\n";
+            return $uploadedImageId;
+        } else {
+            echo "Falha no upload da imagem - continuando sem imagem\n";
+            return null;
         }
-
-        return $this->wPost->website_image_id;
     }
 
     protected function defineContent( $postContent, $seoData )
@@ -160,9 +169,9 @@ class PostPublishService
 
             if ( !empty($imageId) && is_numeric($imageId) ) {
                 $data['featured_media'] = (int)$imageId;
-            } 
-            elseif( $imageId===0 ){
-                $data['featured_media'] = 0;
+                echo "Usando imagem como destaque - ID: " . $imageId . "\n";
+            } else {
+                echo "Publicando sem imagem de destaque\n";
             }
 
             $response = self::makeCurlRequest(
@@ -240,8 +249,11 @@ class PostPublishService
 
     private function uploadFile($url, $archivo, $caption = '') 
     {
-        try 
-        {
+        if (empty($archivo) || empty($url)) {
+            return null;
+        }
+
+        try {
             $ch = curl_init();
             curl_setopt_array($ch, [
                 CURLOPT_URL => trim($archivo),
@@ -263,29 +275,53 @@ class PostPublishService
                 CURLOPT_ENCODING => 'gzip, deflate'
             ]);
             
-            $data = curl_exec($ch);
+            $fileData = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
             
-            if ($data === false) return null;
+            if ($fileData === false || $httpCode !== 200) {
+                echo "Erro ao baixar arquivo: " . $httpCode . "\n";
+                return null;
+            }
 
+            $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+            $contentLength = strlen($fileData);
+
+            if (strpos($contentType, 'image/') !== 0 && 
+                $contentLength > 1000 && 
+                $contentLength < 10485760) {
+                echo "Arquivo inválido - Tipo: " . $contentType . ", Tamanho: " . $contentLength . "\n";
+                return null;
+            }
+
+            $boundary = '----WebKitFormBoundary' . uniqid();
+            $filename = basename($archivo);
+            
+            $postData = "--{$boundary}\r\n";
+            $postData .= "Content-Disposition: form-data; name=\"file\"; filename=\"{$filename}\"\r\n";
+            $postData .= "Content-Type: {$contentType}\r\n\r\n";
+            $postData .= $fileData . "\r\n";
+            $postData .= "--{$boundary}\r\n";
+            $postData .= "Content-Disposition: form-data; name=\"alt_text\"\r\n\r\n";
+            $postData .= $caption . "\r\n";
+            $postData .= "--{$boundary}\r\n";
+            $postData .= "Content-Disposition: form-data; name=\"caption\"\r\n\r\n";
+            $postData .= $caption . "\r\n";
+            $postData .= "--{$boundary}--\r\n";
+
+            // Upload the file
             $curl = curl_init();
             curl_setopt_array($curl, [
                 CURLOPT_URL => $url,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => "",
-                CURLOPT_MAXREDIRS => 100,
                 CURLOPT_TIMEOUT => 3000,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_POST => true,
                 CURLOPT_HTTPHEADER => [
                     'Authorization: Basic ' . $this->credentials->auth,
-                    "cache-control: no-cache",
-                    "Content-Disposition: attachment; filename=".basename($archivo),
-                    "alt_text: ".$caption,
-                    "caption: ".$caption
+                    'Content-Type: multipart/form-data; boundary=' . $boundary,
+                    'Content-Length: ' . strlen($postData)
                 ],
-                CURLOPT_POSTFIELDS => $data,
+                CURLOPT_POSTFIELDS => $postData,
             ]);
             
             $result = curl_exec($curl);
@@ -293,17 +329,28 @@ class PostPublishService
             $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
             curl_close($curl);
             
-            if ($err) return dd("Erro", $err);
+            if ($err) {
+                echo "Erro cURL: " . $err . "\n";
+                return null;
+            }
 
-            if ($httpCode !== 201) return dd("HttpCode", $httpCode, $result);
+            if ($httpCode !== 201) {
+                echo "Erro HTTP: " . $httpCode . "\n";
+                echo "Resposta: " . $result . "\n";
+                return null;
+            }
 
             $response = json_decode($result);
-            if (!$response || !isset($response->id)) return dd("Response",$response, $result);
+            if (!$response || !isset($response->id)) {
+                echo "Resposta inválida: " . $result . "\n";
+                return null;
+            }
 
+            echo "Arquivo enviado com sucesso: " . $archivo . "\n";
             return $response->id;
-        } 
-        catch (\Exception $e) {
-            dd( $e );
+        } catch (\Exception $e) {
+            echo "Erro ao fazer upload do arquivo: " . $e->getMessage() . "\n";
+            return null;
         }
     }
 

@@ -28,7 +28,7 @@ class CqcsSeeder extends Seeder
             ['id'=>3, 'name'=>'Finanças', 'created_at'=>$date, 'updated_at'=>$date],
         ]);
 
-        // ['id'=>1, 'company_id'=>1, 'name'=>'Cqcs Site', 'url'=>'http://wp-base.loc/', 'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date,'config'=>'{"siteMap":"wp-sitemap.xml","wpUser":"Bonanho","wpPass":"BonaWp2025$"}'],
+        // ['id'=>1, 'company_id'=>1, 'name'=>'Cqcs Site', 'url'=>'https://wp-base.loc/', 'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date,'config'=>'{"siteMap":"wp-sitemap.xml","wpUser":"Bonanho","wpPass":"BonaWp2025$"}'],
         Website::insert([
             ['id'=>1, 'company_id'=>1, 'name'=>'Cqcs Site', 'url'=>'https://g.mediagrumft.com', 'category_id'=>1, 'status_id'=>1, 'created_at'=>$date, 'updated_at'=>$date,
             'config'=>'{"siteMap":"wp-sitemap.xml","wpUser":"cqcs@mediagrumft.com","wpPass":"AfXS!0re2ZN^m6R@F$qFyrCt"}'],
@@ -37,34 +37,33 @@ class CqcsSeeder extends Seeder
         $this->setSource('Estadao',                     2, "https://www.estadao.com.br" );
         $this->setSource('Valor econômico ',            3, "https://valor.globo.com" );
         $this->setSource('Sonho Seguro',                1, "https://www.sonhoseguro.com.br" );
-        $this->setSource('Seguros Inf',                 1, 'http://www.seguros.inf.br' );
-        $this->setSource('Susep',                       1, 'http://www.susep.gov.br' );
-        $this->setSource('Fenacor',                     1, 'http://www.fenacor.com.br' );
-        $this->setSource('ANS',                         1, 'http://www.ans.gov.br' );
-        $this->setSource('Revista Apólice',             1, 'http://revistaapolice.com.br' );
+        $this->setSource('Seguros Inf',                 1, 'https://www.seguros.inf.br' );
+        $this->setSource('Susep',                       1, 'https://www.susep.gov.br' );
+        $this->setSource('ANS',                         1, 'https://www.ans.gov.br' );
+        $this->setSource('Revista Apólice',             1, 'https://revistaapolice.com.br' );
         $this->setSource('Exame',                       1, 'https://exame.com/' );
-        $this->setSource('Época',                       1, 'http://epoca.globo.com' );
-        $this->setSource('Estadão',                     1, 'http://www.estadao.com.br' );
-        $this->setSource('Folha',                       1, 'http://www.folha.com.br' );
-        $this->setSource('O Globo',                     1, 'http://oglobo.globo.com' );
-        $this->setSource('Jornal do Comércio',          1, 'http://jcrs.uol.com.br' );
-        $this->setSource('Correio do Povo',             1, 'http://www.correiodopovo.com.br' );
-        $this->setSource('Diário Oficial da União',     1, 'http://portal.in.gov.br' );
-        $this->setSource('Sincor-SP',                   1, 'http://www.sincor.org.br' );
+        $this->setSource('Época',                       1, 'https://epoca.globo.com' );
+        $this->setSource('Estadão',                     1, 'https://www.estadao.com.br' );
+        $this->setSource('Folha',                       1, 'https://www.folha.com.br' );
+        $this->setSource('O Globo',                     1, 'https://oglobo.globo.com' );
+        $this->setSource('Jornal do Comércio',          1, 'https://jcrs.uol.com.br' );
+        $this->setSource('Correio do Povo',             1, 'https://www.correiodopovo.com.br' );
+        $this->setSource('Diário Oficial da União',     1, 'https://portal.in.gov.br' );
+        $this->setSource('Sincor-SP',                   1, 'https://www.sincor.org.br' );
         $this->setSource('SindMG',                      1, 'https://sindsegmd.com.br' );
-        $this->setSource('Risco Seguro Brasil',         1, 'http://riscosegurobrasil.com' );
-        $this->setSource('Monitor Mercantil',           1, 'http://www.monitormercantil.com.br' );
-        $this->setSource('Revista Cobertura',           1, 'http://www.revistacobertura.com.br' );
-        $this->setSource('Escola Nacional de Seguros',  1, 'http://www.funenseg.org.br' );
+        $this->setSource('Risco Seguro Brasil',         1, 'https://riscosegurobrasil.com' );
+        $this->setSource('Monitor Mercantil',           1, 'https://www.monitormercantil.com.br' );
+        $this->setSource('Revista Cobertura',           1, 'https://www.revistacobertura.com.br' );
+        $this->setSource('Escola Nacional de Seguros',  1, 'https://www.funenseg.org.br' );
         $this->setSource('Capitólio',                   1, 'https://capitolio.com.br' );
-        $this->setSource('Sindseg RS',                  1, 'http://www.sindsegrs.com.br' );
-        $this->setSource('Sincorrs',                    1, 'http://www.sincorrs.com' );
-        $this->setSource('Seguros Inf',                 1, 'http://www.seguros.inf.br' );
-        $this->setSource('Sindseg-SP',                  1, 'http://www.sindsegsp.org.br/site' );
-        $this->setSource('Zero Hora',                   1, 'http://zh.clicrbs.com.br/rs' );
-        $this->setSource('Câmara dos Deputados',        1, 'http://www2.camara.leg.br/camaranoticias' );
-        $this->setSource('CNseg',                       1, 'http://www.cnseg.org.br/cnseg/home.html' );
-        $this->setSource('Sulamerica',                  1, 'http://sulamerica.comunique-se.com.br/sulamerica' );
+        $this->setSource('Sindseg RS',                  1, 'https://www.sindsegrs.com.br' );
+        $this->setSource('Sincorrs',                    1, 'https://www.sincorrs.com' );
+        $this->setSource('Seguros Inf',                 1, 'https://www.seguros.inf.br' );
+        $this->setSource('Sindseg-SP',                  1, 'https://www.sindsegsp.org.br/site' );
+        $this->setSource('Zero Hora',                   1, 'https://zh.clicrbs.com.br/rs' );
+        $this->setSource('Câmara dos Deputados',        1, 'https://www2.camara.leg.br/camaranoticias' );
+        $this->setSource('CNseg',                       1, 'https://www.cnseg.org.br/cnseg/home.html' );
+        $this->setSource('Sulamerica',                  1, 'https://sulamerica.comunique-se.com.br/sulamerica' );
     }
 
     public function setSource( $name, $category="1", $url )

@@ -12,6 +12,7 @@ use App\Models\Source;
 use App\Models\SourcePost;
 use App\Services\CustomFetchService;
 use App\Services\PostFetchService;
+use App\Models\WebsiteSource;
 
 class SourceFetchCustom extends Command
 {
@@ -25,7 +26,7 @@ class SourceFetchCustom extends Command
         $this->line("********** SourceFetch - " . $printDate . " **********");
 
         // $sources = Source::getSourcesToFetchPosts();
-        $sources = Source::whereIn("id",[1])->get();
+        $sources = Source::whereIn("id",[1, 2, 4, 5, 7])->get();
         //$sources = Source::whereIn("id",[1,2,4,14])->get();
 
         foreach( $sources as $source )
@@ -36,19 +37,14 @@ class SourceFetchCustom extends Command
             {  
                 $baseUrl = $source->url;
                 $response = Http::get($baseUrl);
-                
                 if (!$response->ok()) {
                     $this->error("Erro ao acessar {$baseUrl}: " . $response->status());
                 }
                 
-                
-
                 $crawler = new Crawler($response->body(), $baseUrl);
 
                 $node = $crawler->filter($source->template->homeNew)->first();
-
-                if ($node->count()) 
-                {
+                if ($node->count()) {
                     $newPostUrl   = $node->attr('href');
                     if (strpos($newPostUrl, 'http') !== 0) {
                         // $newPostUrl = $this->baseUrl . $newPostUrl;
@@ -57,7 +53,6 @@ class SourceFetchCustom extends Command
                     }
                 }
 
-                $newPostUrl = 'https://www.estadao.com.br/politica/carolina-brigido/minoria-do-stf-alimenta-esperanca-de-bolsonaro-por-anistia/';
                 $this->postExists( $source->id, $newPostUrl );
 
                 $crawlerData = Http::get($newPostUrl);
@@ -66,9 +61,7 @@ class SourceFetchCustom extends Command
                     $crawler = new Crawler($crawlerData->body(), $newPostUrl);
 
                     $customFetch = new CustomFetchService( $source );
-                    
-                    $methodName = "fetchSource_".$source->id;
-                    $postData = $customFetch->$methodName( $crawler );
+                    $postData = $customFetch->fetchSource( $crawler );
 
                     $postData->url_original = $newPostUrl;
                     
