@@ -60,7 +60,7 @@ class CustomFetchService
             12. Remova menções a anuncios, leituras fora desse texto etc.
         ";
 
-        if((int)$this->source->template->content == 0){
+        if((int)$this->source->template->rewrite == 0){
             $contentPrompt = "
                 1. Retorne o texto principal sem alterações, apenas removendo class, id e deixando o html mais limpo
                 2. Remova menções a anuncios, leituras fora desse texto etc.
