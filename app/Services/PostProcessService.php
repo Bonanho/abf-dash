@@ -47,7 +47,7 @@ class PostProcessService
         elseif( $websitePostQueue->type_id == WebsitePostQueue::TYPE_REWRITE )
         {
             # Title
-            if( strpos($postParams->rewrited, 'title')  ) {
+            if(isset($postParams->rewrited) && strpos($postParams->rewrited, 'title')  ) {
                 echo "title rewrited! - ";
                 $processedParams->title = $postParams->title;
             } 
@@ -60,7 +60,7 @@ class PostProcessService
             
 
             # Description
-            if( strpos($postParams->rewrited, 'description')  ) {
+            if(isset($postParams->rewrited) && strpos($postParams->rewrited, 'description')  ) {
                 echo "description rewrited! - ";
                 $processedParams->description = $postParams->description;
             } 
@@ -74,7 +74,7 @@ class PostProcessService
             }
             
             # Content
-            if( strpos($postParams->rewrited, 'content')  ) {
+            if(isset($postParams->rewrited) && strpos($postParams->rewrited, 'content')  ) {
                 echo "content rewrited! - ";
                 $processedParams->content = $postParams->content;
             } 

@@ -37,12 +37,12 @@ class CqcsSeeder extends Seeder
         $this->setSource('Estadao',                     2, "https://www.estadao.com.br" );
         $this->setSource('Valor econômico ',            3, "https://valor.globo.com" );
         $this->setSource('Sonho Seguro',                1, "https://www.sonhoseguro.com.br" );
-        $this->setSource('Diario oficial',              1, 'http://www.seguros.inf.br' );
+        $this->setSource('Seguros Inf',                 1, 'http://www.seguros.inf.br' );
         $this->setSource('Susep',                       1, 'http://www.susep.gov.br' );
         $this->setSource('Fenacor',                     1, 'http://www.fenacor.com.br' );
         $this->setSource('ANS',                         1, 'http://www.ans.gov.br' );
         $this->setSource('Revista Apólice',             1, 'http://revistaapolice.com.br' );
-        $this->setSource('Exame',                       1, 'http://exame.abril.com.br' );
+        $this->setSource('Exame',                       1, 'https://exame.com/' );
         $this->setSource('Época',                       1, 'http://epoca.globo.com' );
         $this->setSource('Estadão',                     1, 'http://www.estadao.com.br' );
         $this->setSource('Folha',                       1, 'http://www.folha.com.br' );
@@ -65,7 +65,6 @@ class CqcsSeeder extends Seeder
         $this->setSource('Câmara dos Deputados',        1, 'http://www2.camara.leg.br/camaranoticias' );
         $this->setSource('CNseg',                       1, 'http://www.cnseg.org.br/cnseg/home.html' );
         $this->setSource('Sulamerica',                  1, 'http://sulamerica.comunique-se.com.br/sulamerica' );
-        $this->setSource('Praque Seguro',               1, 'http://www.praqueseguro.com.br/2018/01/o-chato-do-corretor.html' );
     }
 
     public function setSource( $name, $category="1", $url )

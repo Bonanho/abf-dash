@@ -13,7 +13,7 @@ use App\Models\SourcePost;
 use App\Services\CustomFetchService;
 use App\Services\PostFetchService;
 
-class SourceFetch extends Command
+class SourceFetchCustom extends Command
 {
     protected $signature = 'source:custom';
 
@@ -25,8 +25,8 @@ class SourceFetch extends Command
         $this->line("********** SourceFetch - " . $printDate . " **********");
 
         // $sources = Source::getSourcesToFetchPosts();
-        // $sources = Source::whereIn("id",[1])->get();
-        $sources = Source::whereIn("id",[1,2,4,14])->get();
+        $sources = Source::whereIn("id",[1])->get();
+        //$sources = Source::whereIn("id",[1,2,4,14])->get();
 
         foreach( $sources as $source )
         {
@@ -57,6 +57,7 @@ class SourceFetch extends Command
                     }
                 }
 
+                $newPostUrl = 'https://www.estadao.com.br/politica/carolina-brigido/minoria-do-stf-alimenta-esperanca-de-bolsonaro-por-anistia/';
                 $this->postExists( $source->id, $newPostUrl );
 
                 $crawlerData = Http::get($newPostUrl);
