@@ -80,7 +80,14 @@ class CustomFetchService
             ";
         }
 
-        $maxTokens = (int) (strlen($text) * 1.5);
+        $numText = strlen($text);
+        $maxTokens = (int) ceil($numText * 1.5);
+        
+        $maxContextTokens = 128000;
+        if ($numText > $maxContextTokens) {
+            echo "Matéria ignorada: excede limite de tokens do GPT-4o-mini (" . number_format($numText) . " caracteres > " . number_format($maxContextTokens) . " tokens)\n";
+            return "";
+        }
 
         $urlIa = "https://api.openai.com/v1/chat/completions";
         $body = [
