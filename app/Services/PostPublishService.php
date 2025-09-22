@@ -287,9 +287,9 @@ class PostPublishService
             $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
             $contentLength = strlen($fileData);
 
-            echo "Debug - URL: " . $archivo . "\n";
-            echo "Debug - Content-Type: " . $contentType . "\n";
-            echo "Debug - Content-Length: " . $contentLength . "\n";
+            //echo "Debug - URL: " . $archivo . "\n";
+            //echo "Debug - Content-Type: " . $contentType . "\n";
+            //echo "Debug - Content-Length: " . $contentLength . "\n";
             
             if (strpos($contentType, 'image/') !== 0) {
                 echo "Arquivo inválido - Tipo: " . $contentType . ", Tamanho: " . $contentLength . "\n";
@@ -314,8 +314,8 @@ class PostPublishService
                 $filename = 'image_' . uniqid() . '.' . $extension;
             }
 
-            echo "Debug - Filename: " . $filename . "\n";
-            echo "Debug - Upload URL: " . $url . "\n";
+            //echo "Debug - Filename: " . $filename . "\n";
+            //echo "Debug - Upload URL: " . $url . "\n";
 
             $tempFile = tempnam(sys_get_temp_dir(), 'upload_');
             file_put_contents($tempFile, $fileData);
@@ -350,8 +350,8 @@ class PostPublishService
                 return null;
             }
 
-            echo "Debug - Upload HTTP Code: " . $httpCode . "\n";
-            echo "Debug - Upload Response: " . $result . "\n";
+            //echo "Debug - Upload HTTP Code: " . $httpCode . "\n";
+            //echo "Debug - Upload Response: " . $result . "\n";
             
             if ($httpCode !== 201) {
                 echo "Erro HTTP: " . $httpCode . "\n";
