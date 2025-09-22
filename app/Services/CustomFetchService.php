@@ -186,6 +186,17 @@ class CustomFetchService
         try {
             $container = $crawler->filter($this->source->template->content)->first();
             $this->result->content = $this->returnAI($container->html());
+            try {
+                $dom = new DOMDocument();
+                @$dom->loadHTML(mb_convert_encoding($this->result->content, 'HTML-ENTITIES', 'UTF-8'));
+                $pTags = $dom->getElementsByTagName('p');
+                if ($pTags->length < 2) {
+                    echo "Conteúdo com poucos parágrafos (menos de 2), ignorando.\n";
+                    $this->result->content = "";
+                }
+            } catch (\Exception $e) {
+                echo "Não foi possivel validar o tamanho.\n";
+            }
             $this->result->rewrited .= "content";
         } catch (\Exception $e) {
             echo "Conteúdo não encontrado com seletor: " . ($this->source->template->content) . "\n";

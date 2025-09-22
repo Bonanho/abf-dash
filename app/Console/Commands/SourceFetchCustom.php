@@ -63,6 +63,11 @@ class SourceFetchCustom extends Command
                     $customFetch = new CustomFetchService( $source );
                     $postData = $customFetch->fetchSource( $crawler );
 
+                    if (empty(trim($postData->content))) {
+                        echo "Conteúdo insuficiente, pulando registro.\n";
+                        continue;
+                    }
+
                     $postData->url_original = $newPostUrl;
                     
                     $sourcePost = SourcePost::registerCustom( $source, $postData);
