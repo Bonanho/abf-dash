@@ -287,29 +287,45 @@ class PostPublishService
             $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
             $contentLength = strlen($fileData);
 
-            if (strpos($contentType, 'image/') !== 0 && 
-                $contentLength > 1000 && 
-                $contentLength < 10485760) {
+            echo "Debug - URL: " . $archivo . "\n";
+            echo "Debug - Content-Type: " . $contentType . "\n";
+            echo "Debug - Content-Length: " . $contentLength . "\n";
+            
+            if (strpos($contentType, 'image/') !== 0) {
                 echo "Arquivo inválido - Tipo: " . $contentType . ", Tamanho: " . $contentLength . "\n";
                 return null;
             }
 
-            $boundary = '----WebKitFormBoundary' . uniqid();
-            $filename = basename($archivo);
-            
-            $postData = "--{$boundary}\r\n";
-            $postData .= "Content-Disposition: form-data; name=\"file\"; filename=\"{$filename}\"\r\n";
-            $postData .= "Content-Type: {$contentType}\r\n\r\n";
-            $postData .= $fileData . "\r\n";
-            $postData .= "--{$boundary}\r\n";
-            $postData .= "Content-Disposition: form-data; name=\"alt_text\"\r\n\r\n";
-            $postData .= $caption . "\r\n";
-            $postData .= "--{$boundary}\r\n";
-            $postData .= "Content-Disposition: form-data; name=\"caption\"\r\n\r\n";
-            $postData .= $caption . "\r\n";
-            $postData .= "--{$boundary}--\r\n";
+            $parsedUrl = parse_url($archivo);
+            $pathInfo = pathinfo($parsedUrl['path']);
+            $filename = $pathInfo['filename'] . '.' . $pathInfo['extension'];
 
-            // Upload the file
+            if (empty($pathInfo['extension'])) {
+                $extension = 'jpg'; // default
+                if (strpos($contentType, 'jpeg') !== false) {
+                    $extension = 'jpg';
+                } elseif (strpos($contentType, 'png') !== false) {
+                    $extension = 'png';
+                } elseif (strpos($contentType, 'gif') !== false) {
+                    $extension = 'gif';
+                } elseif (strpos($contentType, 'webp') !== false) {
+                    $extension = 'webp';
+                }
+                $filename = 'image_' . uniqid() . '.' . $extension;
+            }
+
+            echo "Debug - Filename: " . $filename . "\n";
+            echo "Debug - Upload URL: " . $url . "\n";
+
+            $tempFile = tempnam(sys_get_temp_dir(), 'upload_');
+            file_put_contents($tempFile, $fileData);
+
+            $postData = [
+                'file' => new \CURLFile($tempFile, $contentType, $filename),
+                'alt_text' => $caption,
+                'caption' => $caption
+            ];
+
             $curl = curl_init();
             curl_setopt_array($curl, [
                 CURLOPT_URL => $url,
@@ -318,8 +334,6 @@ class PostPublishService
                 CURLOPT_POST => true,
                 CURLOPT_HTTPHEADER => [
                     'Authorization: Basic ' . $this->credentials->auth,
-                    'Content-Type: multipart/form-data; boundary=' . $boundary,
-                    'Content-Length: ' . strlen($postData)
                 ],
                 CURLOPT_POSTFIELDS => $postData,
             ]);
@@ -328,12 +342,17 @@ class PostPublishService
             $err = curl_error($curl);
             $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
             curl_close($curl);
+
+            unlink($tempFile);
             
             if ($err) {
                 echo "Erro cURL: " . $err . "\n";
                 return null;
             }
 
+            echo "Debug - Upload HTTP Code: " . $httpCode . "\n";
+            echo "Debug - Upload Response: " . $result . "\n";
+            
             if ($httpCode !== 201) {
                 echo "Erro HTTP: " . $httpCode . "\n";
                 echo "Resposta: " . $result . "\n";
@@ -349,6 +368,9 @@ class PostPublishService
             echo "Arquivo enviado com sucesso: " . $archivo . "\n";
             return $response->id;
         } catch (\Exception $e) {
+            if (isset($tempFile) && file_exists($tempFile)) {
+                unlink($tempFile);
+            }
             echo "Erro ao fazer upload do arquivo: " . $e->getMessage() . "\n";
             return null;
         }
