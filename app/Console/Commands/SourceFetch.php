@@ -20,7 +20,7 @@ class SourceFetch extends Command
         $printDate = (new DateTime())->format('Y-m-d H:i:s');
         $this->line("********** SourceFetch - " . $printDate . " **********");
 
-        $sources = Source::getSourcesToFetchPosts();
+        $sources = Source::where("status_id",Source::STATUS_ACTIVE)->where("type_id",Source::TYPE_WP)->get();
 
         foreach($sources as $source) 
         {   

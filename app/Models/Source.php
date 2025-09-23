@@ -47,12 +47,4 @@ class Source extends Model
         return self::TYPES[$this->type_id];
     }
 
-    public static function getSourcesToFetchPosts()
-    {
-        $sources = self::where("status_id",self::STATUS_ACTIVE)
-        // ->whereIn("id",[3,24])
-        ->get();
-
-        return $sources;
-    }
 }
