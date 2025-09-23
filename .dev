@@ -6,8 +6,8 @@
 - OK - Ajustar comando de reescrita usando parametro ( Reescrita S/N  )
 - OK - Testes de IA GPT
 - OK - Novos campos na edição de FONTE, para padrão de template
-- Unificar comando de SourceFetch ( WP e CUSTOM ) 
-- Testar se existir menos de 2 posts status=0 RODA, senao PULA
+- OK - Unificar comando de SourceFetch ( WP e CUSTOM ) 
+- OK - Testar se existir menos de 2 posts status=0 RODA, senao PULA
 - Adicionar a rewrited de tudo por API (OpenAi) / Remover Ollama.
 - Filtros de busca nas telas
 - modal para editar config de website/fonte

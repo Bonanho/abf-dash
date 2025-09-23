@@ -170,8 +170,6 @@ class PostFetchService
         try
         {
             if ($this->source->type_id === Source::TYPE_WP) {
-
-                dd($this->sourcePost->endpoint, Source::TYPE_WP);
                 // **** Somente para testes e comparação ****
                 $postData = $this->getWp($this->sourcePost->endpoint);
 
