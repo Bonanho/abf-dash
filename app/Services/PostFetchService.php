@@ -18,10 +18,13 @@ class PostFetchService
     {
         $this->source = $source;
 
-        $this->apiUrlBase         = $this->source->url . "/wp-json/wp/v2/" ;
-        $this->apiUrlBasePost     = $this->source->url . "/wp-json/wp/v2/posts/" ;
-        $this->apiUrlBaseMedia    = $this->source->url . "/wp-json/wp/v2/media/" ;
-        $this->apiUrlBaseCategory = $this->source->url . "/wp-json/wp/v2/categories/" ;
+        $baseUrl = ( @$source->template->wpEndpoint ) ? $source->template->wpEndpoint : $this->source->url;
+
+        $this->apiUrlBase         = $baseUrl . "/wp-json/wp/v2";
+
+        $this->apiUrlBasePost     = $this->apiUrlBase . "/posts/";
+        $this->apiUrlBaseMedia    = $this->apiUrlBase . "/media/";
+        $this->apiUrlBaseCategory = $this->apiUrlBase . "/categories/";
     }
 
     #####################

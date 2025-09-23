@@ -2,16 +2,19 @@
 
 namespace App\Services;
 
-use App\Models\SourcePost;
-use DOMDocument;
 use Illuminate\Support\Facades\Http;
+use DOMDocument;
 use Symfony\Component\DomCrawler\Crawler;
+
+use App\Models\SourcePost;
+use App\Models\WebsiteSource;
 
 class CustomFetchService 
 {
     public $source;
     public $baseUrl;
     public $result;
+    public $postRewrite;
 
     public function __construct( $source )
     {
@@ -30,6 +33,10 @@ class CustomFetchService
             "category"      => 1,
             "post_id"       => 0,
         ];
+
+        // CQCS Check
+        $websiteSource = WebsiteSource::where("source_id",$source->id)->first();
+        $this->postRewrite = (@$websiteSource->doc->rewrite) ? true : false;
     }
     
     public function returnAI( $text ) 
@@ -59,8 +66,8 @@ class CustomFetchService
             11. Retorne em HTML válido usando apenas <h2>, <h3>, <p>, <ul>, <li>
             12. Remova menções a anuncios, leituras fora desse texto etc.
         ";
-
-        if((int)$this->source->template->rewrite == 0){
+        
+        if( !$this->postRewrite ){
             $contentPrompt = "
                 1. Retorne o texto principal sem alterações, apenas removendo class, id e deixando o html mais limpo
                 2. Remova menções a anuncios, leituras fora desse texto etc.

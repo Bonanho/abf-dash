@@ -21,8 +21,9 @@ class Sources extends Controller
     {
         $source = Source::find( codeDecrypt($sourceId) );
         $categories = AuxCategory::all()->pluck('name', 'id');
+        $types = Source::TYPES;
 
-        return view('source.edit', compact('source', 'categories'));
+        return view('source.edit', compact('source', 'categories', 'types'));
     }
 
     public function store( Request $request )
@@ -39,10 +40,18 @@ class Sources extends Controller
             $source->name        = $request->name;
             $source->url         = $request->url;
             $source->status_id   = $request->status_id;
+            $source->type_id     = $request->type_id;
+
+            $template = ($source->template) ?? (object) [];
+            $template->wpEndpoint = $request->tpt_wp_endpoint;
+            $template->homeNew    = $request->tpt_home_new;
+            $template->title      = $request->tpt_title;
+            $template->content    = $request->tpt_content;
+            $source->template = $template;
 
             $source->save();
 
-            return redirect()->route('source'); 
+            return redirect()->route('source-edit', codeEncrypt($source->id) ); 
         }
         catch (\Exception $err) 
         {

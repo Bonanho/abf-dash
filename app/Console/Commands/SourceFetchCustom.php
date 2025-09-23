@@ -11,8 +11,6 @@ use Symfony\Component\DomCrawler\Crawler;
 use App\Models\Source;
 use App\Models\SourcePost;
 use App\Services\CustomFetchService;
-use App\Services\PostFetchService;
-use App\Models\WebsiteSource;
 
 class SourceFetchCustom extends Command
 {
