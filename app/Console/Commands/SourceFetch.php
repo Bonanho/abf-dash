@@ -20,7 +20,7 @@ class SourceFetch extends Command
         $printDate = (new DateTime())->format('Y-m-d H:i:s');
         $this->line("********** SourceFetch - " . $printDate . " **********");
 
-        $sources = Source::where("status_id",Source::STATUS_ACTIVE)->where("type_id",Source::TYPE_WP)->get();
+        $sources = Source::where("status_id", Source::STATUS_ACTIVE)->get();
 
         foreach($sources as $source) 
         {   
@@ -28,24 +28,52 @@ class SourceFetch extends Command
             
             try
             {   
-                $postFetchService = new PostFetchService( $source );
+                if ($source->type_id === Source::TYPE_WP) {
+                    $postFetchService = new PostFetchService($source);
 
-                $postNew = $postFetchService->fetchNewPost();
-                echo "Qtd Posts: " . count($postNew)." - ";
+                    $postNew = $postFetchService->fetchNewPost();
+                    echo "Qtd Posts: " . count($postNew) . " - ";
 
-                foreach( $postNew as $postData )
-                {
-                    echo "PostOriginId: $postData->id - Register: ";
-                    $sourcePost = SourcePost::register( $source, $postData);
-                    
-                    if( $sourcePost ) 
-                    {
-                        echo "OK - ";
-                        $postFetchService->getPostData( $sourcePost->id );
-                        echo "postData OK \n";
-                    } else {
-                        echo "Já Existe! \n";
+                    foreach ($postNew as $postData) {
+                        echo "PostOriginId: $postData->id - Register: ";
+                        $sourcePost = SourcePost::register($source, $postData);
+
+                        if ($sourcePost) {
+                            echo "OK - ";
+                            $postFetchService->getPostData($sourcePost->id);
+                            echo "postData OK \n";
+                        } else {
+                            echo "Já Existe! \n";
+                        }
                     }
+                } elseif ($source->type_id === Source::TYPE_CUSTOM) {
+                    echo "Processando fonte customizada... ";
+
+                    $postFetchService = new PostFetchService($source);
+                    $postNew = $postFetchService->fetchNewPost();
+                    echo "Qtd Posts: " . count($postNew) . " - ";
+
+                    foreach ($postNew as $postDataEntry) {
+                        echo "Endpoint: {$postDataEntry->endpoint} - Register: ";
+
+                        try {
+                            $this->postExists($source->id, $postDataEntry->endpoint);
+                        } catch (\Exception $e) {
+                            echo "Já Existe! \n";
+                            continue;
+                        }
+
+                        $sourcePost = SourcePost::register($source, $postDataEntry);
+                        if ($sourcePost) {
+                            echo "OK - ";
+                            $postFetchService->getPostData($sourcePost->id);
+                            echo "postData OK \n";
+                        } else {
+                            echo "Já Existe! \n";
+                        }
+                    }
+                } else {
+                    echo "Tipo de fonte não suportado, pulando.\n";
                 }
                 
             }
@@ -57,6 +85,14 @@ class SourceFetch extends Command
         
         $printDate = (new DateTime())->format('Y-m-d H:i:s');
         $this->line("\n********** SourceFetch - FIM - " . $printDate . " **********\n");
+    }
+
+    public function postExists($sourceId, $url)
+    {
+        $exists = SourcePost::where("source_id", $sourceId)->where("endpoint", $url)->count();
+        if ($exists) {
+            throw new \Exception("Matéria já existe");
+        }
     }
 
 }

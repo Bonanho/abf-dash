@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Http;
+use Symfony\Component\DomCrawler\Crawler;
+
 use App\Models\Source;
 use App\Models\SourcePost;
 
@@ -21,14 +24,11 @@ class PostFetchService
         $baseUrl = ( @$source->template->wpEndpoint ) ? $source->template->wpEndpoint : $this->source->url;
 
         $this->apiUrlBase         = $baseUrl . "/wp-json/wp/v2";
-
         $this->apiUrlBasePost     = $this->apiUrlBase . "/posts/";
         $this->apiUrlBaseMedia    = $this->apiUrlBase . "/media/";
         $this->apiUrlBaseCategory = $this->apiUrlBase . "/categories/";
     }
 
-    #####################
-    ### GET NEW POSTS ###
     public function fetchValidation()
     {
         $apiUrl = $this->apiUrlBasePost . "?per_page=1" ;
@@ -81,37 +81,64 @@ class PostFetchService
     {
         try
         {
-            $apiUrl = $this->apiUrlBasePost . "?per_page=1" ;
+            if ($this->source->type_id === Source::TYPE_WP) {
+                $apiUrl = $this->apiUrlBasePost . "?per_page=1" ;
 
-            $ch = curl_init();
-            curl_setopt_array($ch, [
-                CURLOPT_URL => $apiUrl,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-                CURLOPT_HTTPHEADER => [
-                    'Accept: application/json',
-                    'Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-                    'Connection: keep-alive',
-                    'Cache-Control: no-cache',
-                    'Pragma: no-cache',
-                    'DNT: 1',
-                    'Upgrade-Insecure-Requests: 1',
-                ],
-                CURLOPT_TIMEOUT => 30,
-                CURLOPT_CONNECTTIMEOUT => 10,
-            ]);
-            
-            $response = curl_exec($ch);
-            $error = curl_error($ch);
-            curl_close($ch);
+                $ch = curl_init();
+                curl_setopt_array($ch, [
+                    CURLOPT_URL => $apiUrl,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_SSL_VERIFYPEER => false,
+                    CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+                    CURLOPT_HTTPHEADER => [
+                        'Accept: application/json',
+                        'Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+                        'Connection: keep-alive',
+                        'Cache-Control: no-cache',
+                        'Pragma: no-cache',
+                        'DNT: 1',
+                        'Upgrade-Insecure-Requests: 1',
+                    ],
+                    CURLOPT_TIMEOUT => 30,
+                    CURLOPT_CONNECTTIMEOUT => 10,
+                ]);
+                
+                $response = curl_exec($ch);
+                $error = curl_error($ch);
+                curl_close($ch);
 
-            $data = json_decode($response);
+                $data = json_decode($response);
 
-            return $this->defineNewPostsResult( $data );
+                return $this->defineNewPostsResult($data);
+            }
+
+            // TYPE_CUSTOM
+            $baseUrl = $this->source->url;
+            $response = Http::get($baseUrl);
+            if (!$response->ok()) {
+                throw new \Exception("Erro ao acessar {$baseUrl}: " . $response->status());
+            }
+
+            $crawler = new Crawler($response->body(), $baseUrl);
+            $node = $crawler->filter($this->source->template->homeNew)->first();
+            if (!$node->count()) {
+                throw new \Exception('Seletor de nova matéria não encontrou itens');
+            }
+            $newPostUrl = $node->attr('href');
+            if (strpos($newPostUrl, 'http') !== 0) {
+                $newPostUrl = rtrim($baseUrl, '/') . '/' . ltrim($newPostUrl, '/');
+            }
+
+            $resultData = (object) [];
+            $resultData->id       = 0;
+            $resultData->endpoint = $newPostUrl;
+            $resultData->data     = null;
+
+            $result[] = $resultData;
+            return $result;
         }
-         catch (\Throwable $e) {
+        catch (\Throwable $e) {
             throw new \Exception("Erro ao buscar no source", 0, $e);
         }
 
@@ -140,21 +167,34 @@ class PostFetchService
         // }
 
         $this->sourcePost->setStatus( SourcePost::STATUS_PROCESSING );
-
         try
         {
-            // **** Somente para testes e comparação ****
-            $postData = $this->getWp( $this->sourcePost->endpoint );
+            if ($this->source->type_id === Source::TYPE_WP) {
 
-            $this->sourcePost->post_data2 = $postData;
-            $this->sourcePost->save();
-            // **** Somente para testes e comparação ****
+                dd($this->sourcePost->endpoint, Source::TYPE_WP);
+                // **** Somente para testes e comparação ****
+                $postData = $this->getWp($this->sourcePost->endpoint);
 
-            $doc = $this->defineResultObj( $this->sourcePost->post_data ); // $postData
-            $this->sourcePost->doc = $doc;
+                $this->sourcePost->post_data2 = $postData;
+                $this->sourcePost->save();
+                // **** Somente para testes e comparação ****
+
+                $doc = $this->defineResultObj($this->sourcePost->post_data); // $postData
+                $this->sourcePost->doc = $doc;
+                $this->sourcePost->status_id  = SourcePost::STATUS_DONE;
+                $this->sourcePost->save();
+
+                return true;
+            }
+
+            // TYPE_CUSTOM: buscar conteúdo da URL e preencher doc diretamente
+            $postData = $this->getCustomPostDataByUrl($this->sourcePost->endpoint);
+            if (empty(trim($postData->content))) {
+                throw new \Exception('Conteúdo insuficiente');
+            }
+            $this->sourcePost->doc = $postData;
             $this->sourcePost->status_id  = SourcePost::STATUS_DONE;
             $this->sourcePost->save();
-
             return true;
         }
         catch (\Throwable $e) 
@@ -167,6 +207,120 @@ class PostFetchService
         }
     }
 
+    public function getCustomPostDataByUrl($url)
+    {
+        $response = Http::get($url);
+        if (!$response->ok()) {
+            throw new \Exception("Erro ao acessar {$url}: " . $response->status());
+        }
+
+        $crawler = new Crawler($response->body(), $url);
+        $result = (object) [
+            "sourceId"      => $this->source->id,
+            "title"         => "",
+            "content"       => "",
+            "image"         => "",
+            "url_original"  => $url,
+            "image_caption" => "",
+            "description"   => "",
+            "category"      => 1,
+            "post_id"       => 0,
+        ];
+
+        try {
+            $imageUrl = $crawler->filterXPath('//meta[@property="og:image"]').attr('content');
+            if ($this->testImageDownload($imageUrl)) {
+                $result->image = $imageUrl;
+            } else {
+                $result->image = "";
+            }
+        } catch (\Exception $e) {
+            $result->image = "";
+        }
+
+        try {
+            $result->description = $crawler->filterXPath('//meta[@property="og:description"]').attr('content');
+        } catch (\Exception $e) {
+            $result->description = "";
+        }
+
+        try {
+            $result->title = $crawler->filter($this->source->template->title ?? 'h1')->first()->text();
+        } catch (\Exception $e) {
+        }
+
+        try {
+            $container = $crawler->filter($this->source->template->content)->first();
+            $result->content = $this->cleanHtml($container->html());
+            try {
+                $dom = new \DOMDocument();
+                @$dom->loadHTML(mb_convert_encoding($result->content, 'HTML-ENTITIES', 'UTF-8'));
+                $pTags = $dom->getElementsByTagName('p');
+                if ($pTags->length < 2) {
+                    $result->content = "";
+                }
+            } catch (\Exception $e) {}
+        } catch (\Exception $e) {}
+
+        return $result;
+    }
+
+    private function cleanHtml($html)
+    {
+        if (empty($html)) {
+            return "";
+        }
+        $dom = new \DOMDocument();
+        @$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+
+        foreach (iterator_to_array($dom->getElementsByTagName('script')) as $node) {
+            $node->parentNode->removeChild($node);
+        }
+        foreach (iterator_to_array($dom->getElementsByTagName('style')) as $node) {
+            $node->parentNode->removeChild($node);
+        }
+
+        $xpath = new \DOMXPath($dom);
+        foreach ($xpath->query('//*[@class or @id]') as $el) {
+            if ($el->hasAttribute('class')) {
+                $el->removeAttribute('class');
+            }
+            if ($el->hasAttribute('id')) {
+                $el->removeAttribute('id');
+            }
+        }
+
+        $body = $dom->getElementsByTagName('body')->item(0);
+        if (!$body) {
+            return trim($dom->saveHTML());
+        }
+        $innerHtml = '';
+        foreach ($body->childNodes as $child) {
+            $innerHtml .= $dom->saveHTML($child);
+        }
+        return trim($innerHtml);
+    }
+
+    private function testImageDownload($imageUrl)
+    {
+        if (empty($imageUrl)) return false;
+        try {
+            $response = Http::timeout(10)->head($imageUrl);
+            if ($response->ok()) {
+                $contentType = $response->header('Content-Type');
+                $contentLength = $response->header('Content-Length');
+                if (strpos($contentType, 'image/') === 0 && 
+                    $contentLength && 
+                    $contentLength > 1000 && 
+                    $contentLength < 10485760) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
 
     private function defineResultObj( $postData )
     {
@@ -176,29 +330,15 @@ class PostFetchService
 
         $post->sourceId      = $this->source->id;
         $post->post_id       = $postData->id;
-        $post->title         = $this->filterWords( $postData->title->rendered );
+        $post->title         = $postData->title->rendered;
         $post->description   = $postData->yoast_head_json->description ?? strip_tags($postData->excerpt->rendered);
-        $post->content       = $this->formatContent( $postData->content->rendered );
+        $post->content       = $postData->content->rendered;
         $post->image         = $imageData->url;
         $post->image_caption = $imageData->caption;
         $post->category      = $this->getCategory();
         $post->url_original  = $postData->link;
 
         return $post;
-    }
-
-    ###########
-    ### AUX ###
-    private function filterWords( $text ) 
-    {
-        $palavrasBloqueadas = [ 'Metrópoles', 'CNN', 'Adrenaline', 'Jornal Cidade', 'O Antagonista', 'Antagonista', 'Mundo Conectado', 'Poder 360', 'Tribuna do Norte' ];
-        $textLower = $text;
-        foreach($palavrasBloqueadas as $palavra) {
-            if(mb_strpos($textLower, $palavra) !== false) {
-                return true;
-            }
-        }
-        return $textLower;
     }
 
     private function getImage() 
@@ -299,38 +439,4 @@ class PostFetchService
         }
     }
 
-    private function formatContent( $content ) 
-    {
-        // Garantir que o conteúdo está em UTF-8
-        if (!mb_check_encoding($content, 'UTF-8')) {
-            $content = mb_convert_encoding($content, 'UTF-8', 'auto');
-        }
-
-        $content = preg_replace('/<script\b[^>]*>(.*?)<\/script>/isu', '', $content);
-        $content = preg_replace('/<style\b[^>]*>(.*?)<\/style>/isu', '', $content);
-        $content = preg_replace('/<footer\b[^>]*>(.*?)<\/footer>/isu', '', $content);
-        $content = preg_replace('/<header\b[^>]*>(.*?)<\/header>/isu', '', $content);
-        $content = preg_replace('/<nav\b[^>]*>(.*?)<\/nav>/isu', '', $content);
-        $content = preg_replace('/<aside\b[^>]*>(.*?)<\/aside>/isu', '', $content);
-        $content = preg_replace('/<div\b[^>]*>(.*?)<\/div>/isu', '', $content);
-        $content = preg_replace('/<article\b[^>]*>(.*?)<\/article>/isu', '', $content);
-        $content = preg_replace('/<figcaption\b[^>]*>(.*?)<\/figcaption>/isu', '', $content);
-        $content = preg_replace('/<figure\b[^>]*>(.*?)<\/figure>/isu', '', $content);
-        $content = preg_replace('/<h6\b[^>]*>(.*?)<\/h6>/isu', '', $content);
-        // Preservar imagens inline; ainda removemos SVGs por segurança
-        $content = preg_replace('/<img\b[^>]*>/isu', '', $content);
-        $content = preg_replace('/<svg\b[^>]*>/isu', '', $content);
-
-        $content = str_replace(['<br>', '<br/>', '<br />'], "\n", $content); 
-        // Usar strip_tags com encoding UTF-8
-
-        // Incluímos <img> para manter imagens inline e seus atributos (src, alt, etc.)
-        $content = strip_tags($content, '<p><br><strong><b><em><i><ul><ol><li><h1><h2><h3><h4><h5><h6><blockquote><pre><code>');
-        $content = preg_replace('/<(p|br|strong|b|em|i|ul|ol|li|h1|h2|h3|h4|h5|h6|blockquote|pre|code)[^>]*>/iu', '<$1>', $content);
-        
-        $content = preg_replace('/\s+/u', ' ', $content);
-        $content = trim($content);
-        $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        return $content;
-    }
 }
