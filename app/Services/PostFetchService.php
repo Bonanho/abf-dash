@@ -183,6 +183,8 @@ class PostFetchService
                 $this->sourcePost->save();
 
                 return true;
+
+                
             }
 
             // TYPE_CUSTOM: buscar conteúdo da URL e preencher doc diretamente
@@ -193,6 +195,7 @@ class PostFetchService
             $this->sourcePost->doc = $postData;
             $this->sourcePost->status_id  = SourcePost::STATUS_DONE;
             $this->sourcePost->save();
+            
             return true;
         }
         catch (\Throwable $e) 
@@ -226,77 +229,45 @@ class PostFetchService
         ];
 
         try {
-            $imageUrl = $crawler->filterXPath('//meta[@property="og:image"]').attr('content');
+            $imageUrl = $crawler->filterXPath('//meta[@property="og:image"]')->attr('content');    
             if ($this->testImageDownload($imageUrl)) {
                 $result->image = $imageUrl;
+                echo "Imagem válida: " . $imageUrl . "\n";
             } else {
                 $result->image = "";
+                echo "Imagem inválida ou inacessível, ignorando: " . $imageUrl . "\n";
             }
         } catch (\Exception $e) {
             $result->image = "";
-        }
-
-        try {
-            $result->description = $crawler->filterXPath('//meta[@property="og:description"]').attr('content');
-        } catch (\Exception $e) {
-            $result->description = "";
+            echo "Erro ao extrair imagem: " . $e->getMessage() . "\n";
         }
 
         try {
             $result->title = $crawler->filter($this->source->template->title ?? 'h1')->first()->text();
         } catch (\Exception $e) {
+            echo "Título não encontrado com seletor: " . ($this->source->template->title ?? 'h1') . "\n";
+        }
+
+        try {
+            $result->description = $crawler->filterXPath('//meta[@property="og:description"]')->attr('content');
+        } catch (\Exception $e) {
+            $result->description = "";
+            echo "Erro ao extrair descrição: " . $e->getMessage() . "\n";
         }
 
         try {
             $container = $crawler->filter($this->source->template->content)->first();
-            $result->content = $this->cleanHtml($container->html());
-            try {
-                $dom = new \DOMDocument();
-                @$dom->loadHTML(mb_convert_encoding($result->content, 'HTML-ENTITIES', 'UTF-8'));
-                $pTags = $dom->getElementsByTagName('p');
-                if ($pTags->length < 2) {
-                    $result->content = "";
-                }
-            } catch (\Exception $e) {}
-        } catch (\Exception $e) {}
-
+            $result->content = $container->html();
+            $paraCount = $container->filter('p')->count();
+            if ($paraCount < 2) {
+                echo "Conteúdo com poucos parágrafos (menos de 2), ignorando.\n";
+                $result->content = "";
+            }
+        } catch (\Exception $e) {
+            echo "Conteúdo não encontrado com seletor: " . ($this->source->template->content) . "\n";
+        }
+        
         return $result;
-    }
-
-    private function cleanHtml($html)
-    {
-        if (empty($html)) {
-            return "";
-        }
-        $dom = new \DOMDocument();
-        @$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
-
-        foreach (iterator_to_array($dom->getElementsByTagName('script')) as $node) {
-            $node->parentNode->removeChild($node);
-        }
-        foreach (iterator_to_array($dom->getElementsByTagName('style')) as $node) {
-            $node->parentNode->removeChild($node);
-        }
-
-        $xpath = new \DOMXPath($dom);
-        foreach ($xpath->query('//*[@class or @id]') as $el) {
-            if ($el->hasAttribute('class')) {
-                $el->removeAttribute('class');
-            }
-            if ($el->hasAttribute('id')) {
-                $el->removeAttribute('id');
-            }
-        }
-
-        $body = $dom->getElementsByTagName('body')->item(0);
-        if (!$body) {
-            return trim($dom->saveHTML());
-        }
-        $innerHtml = '';
-        foreach ($body->childNodes as $child) {
-            $innerHtml .= $dom->saveHTML($child);
-        }
-        return trim($innerHtml);
     }
 
     private function testImageDownload($imageUrl)
