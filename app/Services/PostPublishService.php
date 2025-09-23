@@ -420,12 +420,10 @@ class PostPublishService
             $addMetaIfNotEmpty('_yoast_wpseo_twitter-description', isset($seoData->description) ? $seoData->description : (substr(strip_tags($content), 0, 160) ?: $description));
 
             $postData = [
-                'content' => $content,
                 'meta' => $yoastMeta
             ];
 
             $postData = [
-                'content' => $content,
                 'meta' => $yoastMeta
             ];
 
