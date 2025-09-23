@@ -6,30 +6,12 @@ use Normalizer;
 
 class RewriterAiService 
 {
-     public static function getResultsAi($text, $type = 'text') 
+    public static function getResultsAi($text, $type = 'text', $shouldRewrite = true) 
      {
         try 
         {
             if (empty($text)) return '';
-
-            $isHtml = preg_match('/<[^>]+>/', $text);
-            if ($isHtml) 
-            {
-                $paragraphs = self::extractParagraphs($text);
-                if (empty($paragraphs)) return $text;
-
-                $rewrittenContents = [];
-                foreach ($paragraphs as $index => $p) {                
-                    $rewrittenContents[] = self::rewriterText($p['content'], $type);
-                }
-
-                if (empty($rewrittenContents)) return $text;
-
-                return self::reconstructHtml($paragraphs, $rewrittenContents);
-            } 
-            else {
-                return self::rewriterText($text);
-            }
+            return self::rewriterText($text, $type, $shouldRewrite);
         }
         catch (\Exception $e) {
             dd( $e );
@@ -37,54 +19,7 @@ class RewriterAiService
         }
     }
 
-    private static function extractParagraphs($html) 
-    {
-        try {
-            if (empty($html)) return [];
-
-            if (!preg_match('/<html>/i', $html)) {
-                $html = '<!DOCTYPE html><html><body>' . $html . '</body></html>';
-            }
-
-            $dom = new \DOMDocument();
-            $dom->encoding = 'UTF-8';
-            libxml_use_internal_errors(true);
-            $loaded = $dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-            
-            if (!$loaded) return [];
-            
-            $xpath = new \DOMXPath($dom);
-            $paragraphs = $xpath->query('//p|//h1|//h2|//h3|//h4|//h5|//h6|//li');
-            
-            if (!$paragraphs) return [];
-            
-            $result = [];
-            foreach ($paragraphs as $p) {
-                if ($p instanceof \DOMElement) {
-                    $parentTag = null;
-                    if ($p->tagName === 'li' && $p->parentNode instanceof \DOMElement) {
-                        $parentName = strtolower($p->parentNode->tagName);
-                        if ($parentName === 'ul' || $parentName === 'ol') {
-                            $parentTag = $parentName;
-                        }
-                    }
-                    $result[] = [
-                        'tag' => $p->tagName,
-                        'parent' => $parentTag,
-                        'content' => $dom->saveHTML($p),
-                        'html' => $dom->saveHTML($p)
-                    ];
-                }
-            }
-            
-            libxml_use_internal_errors(false);
-            return $result;
-        } catch (\Exception $e) {
-            return [];
-        }
-    }
-
-    public static function rewriterText($text, $type = 'text') 
+    public static function rewriterText($text, $type = 'text', $shouldRewrite = true) 
     {
         $text = mb_convert_encoding($text, 'UTF-8', 'auto');
         $text = preg_replace('/[\x00-\x08\x10\x0B\x0C\x0E-\x19\x7F]|[\x00-\x7F][\x80-\xBF]+|([\xC0\xC1]|[\xF0-\xFF])[\x80-\xBF]*|[\xC2-\xDF]((?![\x80-\xBF])|[\x80-\xBF]{2,})|[\xE0-\xEF](([\x80-\xBF](?![\x80-\xBF]))|(?![\x80-\xBF]{2})|[\x80-\xBF]{3,})/S', '', $text);
@@ -93,64 +28,129 @@ class RewriterAiService
 
         if (empty($text)) return $text;
 
-        $system = $type == 'title' 
-            ?   "Você é um especialista em reescrever títulos jornalísticos. Siga estas regras obrigatórias:
-                1. Reescreva o título em PT-BR.
-                2. Limite de no maximo 70 caracteres ou cerca de 9 palavras, mantendo o significado intacto.
-                3. Seja direto e impactante, eliminando redundâncias.
-                4. Não inclua pontuação no final do título.
+        if ($type == 'text') {
+            $system = "Você é um Jornalista, especialista em reescrever textos para melhor indexação no Google News e SEO, reescreva o texto e Siga estas regras obrigatórias:
+                1. Identificar e extrair apenas o conteúdo principal da matéria jornalística a partir de um HTML completo.
+                2. Ignorar completamente qualquer código-fonte, JavaScript, menus, anúncios, rodapés ou outros elementos que não façam parte da notícia.
+                3. Reescrever e otimizar o texto para torná-lo claro e coeso, mantendo os fatos originais.
+                4. Estruture o HTML APENAS com estas tags: <h2>, <h3>, <p>, <ul>, <li>.
+                5. Não use <h1>, <h4+>, <table>, <blockquote>, <code> ou outras tags.
+                6. Estrutura sugerida:
+                    <h2>Titulo Relevante (opcional)</h2>
+                    <p>...</p>
+                    <h2>Subtítulo 1 relevante ao tema</h2>
+                    <p>...</p>
+                    <h3>Subseção relevante (opcional)</h3>
+                    <p>...</p>
+                    <h3>Outra subseção (opcional)</h3>
+                    <p>...</p>
+                    <h2>Subtítulo para Conclusão</h2>
+                    <p>...</p>
+                7. Parágrafos: escreva de 2 a 4 parágrafos por seção, com 2 a 4 frases cada.
+                8. Listas: use <ul><li>...</li></ul> somente quando o conteúdo exigir enumeração clara.
+                9. NUNCA envolva o resultado em <html>, <head> ou <body>.
+                10. NÃO escape os sinais de menor/maior; as tags devem ser reais, não literais.
+                11. Retorne em HTML válido usando apenas <h2>, <h3>, <p>, <ul>, <li>
+                12. Remova menções a anuncios, leituras fora desse texto etc.
+                13. Remova citações a outros sites de notícias como CNN, O Antagonista, Exame etc.
+                14. Reescreva o texto em PT-BR.
+            ";
+        } else {
+            $RwType = 'textos';
+            if ($type == 'title') {
+                $RwType = 'títulos';
+                $RwMin = 60;
+                $RwMax = 95;
+            } else if ($type == 'description') {
+                $RwType = 'descrições';
+                $RwMin = 120;
+                $RwMax = 160;
+            }
+           
+            $RwMinMax = "Preserve integralmente o significado do texto original";
+            if($type == 'title' || $type == 'description') {
+                $RwMinMax = "Mínimo de ".$RwMin." caracteres e máximo de ".$RwMax.", mantendo o significado intacto.";
+            }
+
+            $system = "Você é um Jornalista, especialista em reescrever ".$RwType." para Google News. Siga estas regras obrigatórias:
+                REGRA FUNDAMENTAL: PRESERVAÇÃO ABSOLUTA DE NOMES PRÓPRIOS
+                - NUNCA, JAMAIS, EM HIPÓTESE ALGUMA altere ou substitua nomes próprios
+                - Mantenha os nomes EXATAMENTE como está no texto original
+                - Se não é citado nome, não cite também
+
+                REGRAS OBRIGATÓRIAS:
+                1. Reescreva a descrição em PT-BR.
+                2. ".$RwMinMax."
+                3. Seja direto e impactante.
+                4. NUNCA altere nomes, datas, locais e acontecimentos do texto enviado.
                 5. Não adicione explicações, comentários ou qualquer conteúdo além do título reescrito.
-                7. Deixe o titulo chamativo, sem perder o significado.
                 6. Retorne apenas o título reescrito, sem texto adicional.
+                7. Deixe o título chamativo, sem perder o significado.
                 8. Dê prioridade a palavras-chave relevantes.
-                9. Resuma a ideia principal, garantindo que o título seja compreendido isoladamente.
+                9. Garantindo que o título seja compreendido isoladamente.
                 10. Evite linguagem ambígua ou contraditória.
-                11. Cuidado para não trocar Moraes por Moro, são pessoas diferentes."
-            :   "Você é um especialista em parafrasear textos com precisão e clareza. Siga estas regras obrigatórias:
-                1. Reescreva o texto em PT-BR.
-                2. Preserve integralmente o significado do texto original.
-                3. Não adicione exemplos, explicações ou introduções.
-                4. Retorne apenas o texto reescrito, sem conteúdo adicional.
-                5. Não altere ou modifique nomes próprios.
-                6. Seja claro, objetivo e fiel ao texto original.
-                7. Não faça comentários ou juízos de valor.
-                8. Mantenha um número similar de palavras.
-                9. Não inclua as regras no texto reescrito.
-                10. Retorne o texto exclusivamente em português brasileiro.
-                11. Em caso de texto vazio, retorna apenas um espaço em branco.";
+                
+                EXEMPLOS DE PRESERVAÇÃO DE NOMES:
+                - 'Trump anuncia nova política' → 'Trump revela política inovadora'
+                - 'Moraes decide sobre caso' → 'Moraes define posição no processo'
+                - 'Vini Jr marca gol' → 'Vini Jr faz gol decisivo'
+                - 'Trump encontra Elon Musk' → 'Trump e Elon Musk são vistos juntos'
+
+                ATENÇÃO CRÍTICA: Se você trocar qualquer nome próprio, a resposta estará INCORRETA.
+            ";
+        }
+
+        if (!$shouldRewrite) {
+            if ($type == 'text') {
+                $contentPrompt = "REGRAS OBRIGATÓRIAS:
+                    1. Retorne o texto principal sem alterações, apenas removendo class, id e deixando o html mais limpo
+                    2. Remova menções a anuncios, leituras fora desse texto etc.
+                    4. NUNCA envolva o resultado em <html>, <head> ou <body>.
+                    5. NÃO escape os sinais de menor/maior; as tags devem ser reais, não literais.
+                ";
+            }
+        }
+
+        $numText = strlen($text);
+        $maxTokens = (int) ceil($numText * 1.5);
+        
+        $maxContextTokens = 128000;
+        if ($numText > $maxContextTokens) {
+            echo "Matéria ignorada: excede limite de tokens do GPT-4o-mini (" . number_format($numText) . " caracteres > " . number_format($maxContextTokens) . " tokens)\n";
+            return "";
+        }
 
         $temp = $type == 'title' ? 0.3 : 0.2;
-
-        $urlIa = "http://localhost:11434/api/generate";
+        $urlIa = "https://api.openai.com/v1/chat/completions";
         $body = [
-            'model' => 'gemma3',
-            'system' => $system,
-            'prompt' => "Reescreva o texto conforme as regras obrigatórias: " . strip_tags($text),
-            'stream' => false,
-            'options' => [
-                'temperature' => $temp,
-                'num_predict' => strlen($text) * 1.5,
-                'repeat_penalty' => 1.8
-            ]
+            'model' => 'gpt-4o-mini',
+            'messages' => [
+                [
+                    'role' => 'system',
+                    'content' => $system
+                ],
+                [
+                    'role' => 'user',
+                    'content' => "HTML da página:\n\n" . $text
+                ]
+            ],
+            'temperature' => $temp,
+            'max_tokens' => $maxTokens
         ];
 
         $ch = curl_init();
         $curlOptions = [
             CURLOPT_URL => $urlIa,
             CURLOPT_POST => 1,
-            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POSTFIELDS => json_encode($body, JSON_UNESCAPED_UNICODE),
             CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json; charset=utf-8',
-                'Accept-Charset: utf-8'
+                'Content-Type: application/json',
+                'Authorization: Bearer '.env("AI_TOKEN").''
             ],
             CURLOPT_TIMEOUT => 300
         ];
-
-        if ($urlIa === "https://rewriter.mediagrumft.com/" && !empty($htUser) && !empty($htPass)) {
-            $curlOptions[CURLOPT_USERPWD] = "$htUser:$htPass";
-        }
 
         curl_setopt_array($ch, $curlOptions);
 
@@ -168,68 +168,10 @@ class RewriterAiService
         $texto = json_decode($response, true);
         if (json_last_error() !== JSON_ERROR_NONE) return $text;
 
-        //echo strip_tags($text)."<br><hr>";
-        //dd($texto);
-
         if (!isset($texto['response'])) return $text;
-
-        $response = AuxService::formatAi($texto['response']);
+        $response = $texto['response'];
 
         return $response;
-    }
-
-    private static function reconstructHtml($originalParagraphs, $rewrittenContents) {
-        try {
-            if (empty($originalParagraphs) || empty($rewrittenContents)) return '';
-            $result = '';
-            $count = count($originalParagraphs);
-            
-            for ($i = 0; $i < $count; $i++) {
-                $p = $originalParagraphs[$i];
-                
-                if (isset($p['tag']) && $p['tag'] === 'li' && isset($p['parent']) && ($p['parent'] === 'ul' || $p['parent'] === 'ol')) {
-                    $listTag = $p['parent'];
-                    $dom = new \DOMDocument('1.0', 'UTF-8');
-                    $dom->formatOutput = true;
-                    $listElement = $dom->createElement($listTag);
-                    
-                    while ($i < $count) {
-                        $current = $originalParagraphs[$i];
-                        if (!isset($current['tag']) || $current['tag'] !== 'li' || !isset($current['parent']) || $current['parent'] !== $listTag) {
-                            break;
-                        }
-                        if (isset($rewrittenContents[$i])) {
-                            $liContent = trim($rewrittenContents[$i]);
-                            if ($liContent !== '') {
-                                $li = $dom->createElement('li');
-                                $li->appendChild($dom->createTextNode($liContent));
-                                $listElement->appendChild($li);
-                            }
-                        }
-                        $i++;
-                    }
-                    if ($listElement->hasChildNodes()) {
-                        $dom->appendChild($listElement);
-                        $result .= $dom->saveHTML($listElement);
-                    }
-                    $i--; 
-                    continue;
-                }
-                
-                if (isset($rewrittenContents[$i])) {
-                    $dom = new \DOMDocument('1.0', 'UTF-8');
-                    $dom->formatOutput = true;
-                    $tagName = isset($p['tag']) ? $p['tag'] : 'p';
-                    $element = $dom->createElement($tagName);
-                    $element->appendChild($dom->createTextNode($rewrittenContents[$i]));
-                    $dom->appendChild($element);
-                    $result .= $dom->saveHTML($element);
-                }
-            }
-            return $result;
-        } catch (\Exception $e) {
-            return '';
-        }
     }
 
 }
