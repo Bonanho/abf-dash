@@ -422,11 +422,7 @@ class PostPublishService
             $postData = [
                 'meta' => $yoastMeta
             ];
-
-            $postData = [
-                'meta' => $yoastMeta
-            ];
-
+            
             $response = self::makeCurlRequest(
                 $this->websiteUrl . "wp-json/wp/v2/posts/{$post_id}",
                 'POST',
