@@ -68,9 +68,9 @@ class PostProcessService
 
         // otimização final de conteúdo após SEO (usa keywords e sitemap)
         $keywords = $processedParams->seoData->keywords ?? [];
-        $sitemap  = @$websitePostQueue->Website->config->sitemap ?? null;
+        $sitemap  = @$websitePostQueue->Website->config->siteMap ?? $websitePostQueue->Website->url.'post-sitemap.xml';
         try {
-            $processedParams->content = self::optimizeContent($processedParams->title, $processedParams->content, $keywords, $sitemap);
+            $processedParams->content = self::optimizeContent($processedParams->title, $processedParams->content, $keywords, $websitePostQueue->Website->url.$sitemap);
         } catch (\Exception $e) {}
 
         return $processedParams;
@@ -82,7 +82,7 @@ class PostProcessService
         return $result;
     }
 
-    private function optimizeContent(  $title, $content, $postKeyWords, $postSitemapUrl ) 
+    private function optimizeContent( $title, $content, $postKeyWords, $postSitemapUrl ) 
     {
         try 
         {
