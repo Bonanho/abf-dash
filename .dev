@@ -8,7 +8,8 @@
 - OK - Novos campos na edição de FONTE, para padrão de template
 - OK - Unificar comando de SourceFetch ( WP e CUSTOM ) 
 - OK - Testar se existir menos de 2 posts status=0 RODA, senao PULA
-- Adicionar a rewrited de tudo por API (OpenAi) / Remover Ollama.
+- OK - Adicionar a rewrited de tudo por API (OpenAi) / Remover Ollama.
+- OK - Remove optimizeContent() (com sitemap e strong) do PublishService e tras para o ProssService.
 - Filtros de busca nas telas
 - modal para editar config de website/fonte
 - Mostrar os arquivos de log
