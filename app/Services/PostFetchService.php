@@ -192,13 +192,12 @@ class PostFetchService
     private function filterWords( $text ) 
     {
         $palavrasBloqueadas = [ 'Metrópoles', 'CNN', 'Adrenaline', 'Jornal Cidade', 'O Antagonista', 'Antagonista', 'Mundo Conectado', 'Poder 360', 'Tribuna do Norte' ];
-        $textLower = mb_strtolower($text, 'UTF-8');
+        $textLower = $text;
         foreach($palavrasBloqueadas as $palavra) {
-            if(mb_strpos($textLower, mb_strtolower($palavra, 'UTF-8')) !== false) {
+            if(mb_strpos($textLower, $palavra) !== false) {
                 return true;
             }
         }
-
         return $textLower;
     }
 
