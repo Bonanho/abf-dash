@@ -59,7 +59,7 @@ return new class extends Migration
             $table->string('post_title');
             $table->longText('post_description');
             $table->longText('post_content');
-            $table->string('post_image');
+            $table->string('post_image',512);
             $table->string('post_image_caption');
             $table->string('post_category');
             $table->json('seo_data');
