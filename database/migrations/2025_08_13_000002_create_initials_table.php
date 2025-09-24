@@ -110,7 +110,7 @@ return new class extends Migration
             $table->string('endpoint');
             $table->json('doc')->nullable(); 
             $table->json('post_data')->nullable(); 
-            $table->json('post_data2')->nullable(); // remover depois
+            $table->json('error')->nullable();
             $table->tinyinteger('status_id')->default(0);
             $table->timestamps();
         });

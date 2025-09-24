@@ -81,7 +81,8 @@ class PostFetchService
     {
         try
         {
-            if ($this->source->type_id === Source::TYPE_WP) {
+            if ($this->source->type_id === Source::TYPE_WP) 
+            {
                 $apiUrl = $this->apiUrlBasePost . "?per_page=1" ;
 
                 $ch = curl_init();
@@ -110,7 +111,7 @@ class PostFetchService
 
                 $data = json_decode($response);
 
-                return $this->defineNewPostsResult($data);
+                return $this->defineNewPostsResult( $data[0]->id, $this->apiUrlBasePost.$data[0]->id, $data[0] );
             }
 
             // TYPE_CUSTOM
@@ -130,13 +131,7 @@ class PostFetchService
                 $newPostUrl = rtrim($baseUrl, '/') . '/' . ltrim($newPostUrl, '/');
             }
 
-            $resultData = (object) [];
-            $resultData->id       = 0;
-            $resultData->endpoint = $newPostUrl;
-            $resultData->data     = null;
-
-            $result[] = $resultData;
-            return $result;
+            return $this->defineNewPostsResult( 0, $newPostUrl );
         }
         catch (\Throwable $e) {
             throw new \Exception("Erro ao buscar no source", 0, $e);
@@ -144,13 +139,13 @@ class PostFetchService
 
     }
 
-    protected function defineNewPostsResult( $data )
+    protected function defineNewPostsResult( $id, $endpoint, $data = null)
     {
         $resultData = (object) [];
 
-        $resultData->id       = $data[0]->id;
-        $resultData->endpoint = $this->apiUrlBasePost . $resultData->id;
-        $resultData->data     = $data[0];
+        $resultData->id       = $id;
+        $resultData->endpoint = $endpoint;
+        $resultData->data     = $data;
 
         $result[] = $resultData;
 
@@ -169,30 +164,19 @@ class PostFetchService
         $this->sourcePost->setStatus( SourcePost::STATUS_PROCESSING );
         try
         {
-            if ($this->source->type_id === Source::TYPE_WP) {
-                // **** Somente para testes e comparação ****
-                $postData = $this->getWp($this->sourcePost->endpoint);
-
-                $this->sourcePost->post_data2 = $postData;
-                $this->sourcePost->save();
-                // **** Somente para testes e comparação ****
-
+            if ( $this->source->type_id == Source::TYPE_WP ) 
+            {
                 $doc = $this->defineResultObj($this->sourcePost->post_data); // $postData
-                $this->sourcePost->doc = $doc;
-                $this->sourcePost->status_id  = SourcePost::STATUS_DONE;
-                $this->sourcePost->save();
-
-                return true;
-
-                
+            }
+            else 
+            {
+                $doc = $this->getCustomPostDataByUrl($this->sourcePost->endpoint);
+                if (empty(trim($doc->content))) {
+                    throw new \Exception('Conteúdo insuficiente');
+                }
             }
 
-            // TYPE_CUSTOM: buscar conteúdo da URL e preencher doc diretamente
-            $postData = $this->getCustomPostDataByUrl($this->sourcePost->endpoint);
-            if (empty(trim($postData->content))) {
-                throw new \Exception('Conteúdo insuficiente');
-            }
-            $this->sourcePost->doc = $postData;
+            $this->sourcePost->doc = $doc;
             $this->sourcePost->status_id  = SourcePost::STATUS_DONE;
             $this->sourcePost->save();
             
@@ -201,7 +185,7 @@ class PostFetchService
         catch (\Throwable $e) 
         {
             $this->sourcePost->setStatus( SourcePost::STATUS_ERROR );
-            $this->sourcePost->post_data2 = $e->getMessage(); // $e->serialize($e)
+            $this->sourcePost->error = $e->getMessage(); // $e->serialize($e)
             $this->sourcePost->save();
 
             throw new \Exception("Erro ao buscar no source [{$this->sourcePost->endpoint}]", 0, $e);
@@ -232,7 +216,7 @@ class PostFetchService
             $imageUrl = $crawler->filterXPath('//meta[@property="og:image"]')->attr('content');    
             if ($this->testImageDownload($imageUrl)) {
                 $result->image = $imageUrl;
-                echo "Imagem válida: " . $imageUrl . "\n";
+                echo "Imagem OK: " . $imageUrl . "\n";
             } else {
                 $result->image = "";
                 echo "Imagem inválida ou inacessível, ignorando: " . $imageUrl . "\n";
@@ -312,7 +296,7 @@ class PostFetchService
 
     private function getImage() 
     {
-        $post = $this->sourcePost->post_data2;
+        $post = $this->sourcePost->post_data;
 
         if( !isset($post->featured_media) || $post->featured_media == 0 ) {
             return (object) ["url"=>"", "caption"=>""];
@@ -338,7 +322,7 @@ class PostFetchService
 
     private function getCategory() 
     {
-        $post = $this->sourcePost->post_data2;
+        $post = $this->sourcePost->post_data;
 
         $category = $this->getWp( $this->apiUrlBaseCategory .$post->categories[0])->name;
 

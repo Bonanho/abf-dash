@@ -30,58 +30,33 @@ class SourceFetch extends Command
         $sources = Source::where("status_id", Source::STATUS_ACTIVE)->get();
         foreach($sources as $source) 
         {   
-            echo "\nSourceId: $source->id - Nome: $source->name \n";
+            echo "\nSourceId: $source->id - Nome: $source->name - Tipo: **".Source::TYPES[$source->type_id]."** \n";
             
             try
             {   
-                if ($source->type_id === Source::TYPE_WP) {
-                    $postFetchService = new PostFetchService($source);
+                $postFetchService = new PostFetchService($source);
 
-                    $postNew = $postFetchService->fetchNewPost();
-                    echo "Qtd Posts: " . count($postNew) . " - ";
+                $postNew = $postFetchService->fetchNewPost();
 
-                    foreach ($postNew as $postData) {
-                        echo "PostOriginId: $postData->id - Register: ";
+                foreach ($postNew as $postData) 
+                {
+                    if ( $source->type_id==Source::TYPE_WP || $source->type_id==Source::TYPE_CUSTOM ) 
+                    {
+                        echo "Endpoint: {$postData->endpoint} \nRegister: ";
                         $sourcePost = SourcePost::register($source, $postData);
 
                         if ($sourcePost) {
-                            echo "OK - ";
+                            echo "OK \n";
                             $postFetchService->getPostData($sourcePost->id);
-                            echo "postData OK \n";
+                            echo "PostData OK \n";
                         } else {
                             echo "Já Existe! \n";
                         }
+                    } 
+                    else {
+                        echo "Tipo de fonte não suportado, pulando.\n";
                     }
-                } elseif ($source->type_id === Source::TYPE_CUSTOM) {
-                    echo "Processando fonte customizada... ";
-
-                    $postFetchService = new PostFetchService($source);
-                    $postNew = $postFetchService->fetchNewPost();
-                    echo "Qtd Posts: " . count($postNew) . " - ";
-
-                    foreach ($postNew as $postDataEntry) {
-                        echo "Endpoint: {$postDataEntry->endpoint} - Register: ";
-
-                        try {
-                            $this->postExists($source->id, $postDataEntry->endpoint);
-                        } catch (\Exception $e) {
-                            echo "Já Existe! \n";
-                            continue;
-                        }
-
-                        $sourcePost = SourcePost::register($source, $postDataEntry);
-                        if ($sourcePost) {
-                            echo "OK - ";
-                            $postFetchService->getPostData($sourcePost->id);
-                            echo "postData OK \n";
-                        } else {
-                            echo "Já Existe! \n";
-                        }
-                    }
-                } else {
-                    echo "Tipo de fonte não suportado, pulando.\n";
                 }
-                
             }
             catch(\Exception $err)
             {

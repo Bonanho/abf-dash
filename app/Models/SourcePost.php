@@ -13,7 +13,7 @@ class SourcePost extends Model
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'doc'       => 'object',
         'post_data' => 'object',
-        'post_data2' => 'object',
+        'error' => 'object',
     ];
 
     CONST STATUS_DONE       = 1;
