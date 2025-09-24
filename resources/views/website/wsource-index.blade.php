@@ -10,18 +10,22 @@
             <input type="hidden" name="action" id="action">
             <input type="hidden" name="rewrite" id="rewrite">
         
-            <x-app.table :titles="['Source Id','Fonte','Fonte Status','Categoria','Post-Status-Padrão','Reescrever','Status','Posts OK/ERR']">
+            <x-app.table :titles="['Source Id','Fonte','Categoria','Post-Status-Padrão','Reescrever','Status','Posts OK/ERR']">
                 @foreach( $wSources as $wSource)
                     @php
                         $rewriteIcon = (@$wSource->doc->rewrite==1) ? "minus" : "plus";
                         $rewriteCall = "handleConfig(".(($rewriteIcon=="plus")?"1":"0").",'".codeEncrypt($wSource->id)."')";
+
+                        $sourceStatusCss = ($wSource->Source->status_id==1) ? "text-success" : "text-danger";                        
+                        
                         $wpost = $wSource->WPost->where("status_id",1)->count();
                         $wpost.= " / ".$wSource->WPost->whereIn("status_id",[-1,11])->count();
                     @endphp
                     <tr>
                         <td>{{$wSource->source_id}}</td>
-                        <td>{{$wSource->Source->name}}</td>
-                        <td>{{$wSource->Source->getStatus()}}</td>
+                        <td class="{{$sourceStatusCss}}"><spam title="Fonte Status: {{$wSource->Source->getStatus()}}">
+                            {{$wSource->Source->name}}</spam>
+                        </td>
                         <td>{{$wSource->Source->Category->name}}</td>
                         <td>{{@$wSource->doc->defaultPostStatus}}</td>
                         <td>
