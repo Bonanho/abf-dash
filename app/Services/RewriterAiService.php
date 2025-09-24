@@ -157,18 +157,18 @@ class RewriterAiService
         $response = curl_exec($ch);
         if (curl_errno($ch)) {
             curl_close($ch);
-            return $text;
+            return "";
         }
         
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         
-        if ($httpCode !== 200) return $text;
+        if ($httpCode !== 200) return "";
 
         $texto = json_decode($response, true);
-        if (json_last_error() !== JSON_ERROR_NONE) return $text;
+        if (json_last_error() !== JSON_ERROR_NONE) return "";
 
-        if (!isset($texto['response'])) return $text;
+        if (!isset($texto['response'])) return "";
         $response = $texto['response'];
 
         return $response;

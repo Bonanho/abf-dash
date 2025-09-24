@@ -22,11 +22,6 @@ class SourceFetch extends Command
         $printDate = (new DateTime())->format('Y-m-d H:i:s');
         $this->line("********** SourceFetch - " . $printDate . " **********");
 
-        if ($this->shouldSkipFetchByQueue()) {
-            echo "Todos os websites possuem pelo menos 2 posts pendentes. Ignorando fetch.\n";
-            return 0;
-        }
-
         $sources = Source::where("status_id", Source::STATUS_ACTIVE)->get();
         foreach($sources as $source) 
         {   
@@ -66,22 +61,6 @@ class SourceFetch extends Command
         
         $printDate = (new DateTime())->format('Y-m-d H:i:s');
         $this->line("\n********** SourceFetch - FIM - " . $printDate . " **********\n");
-    }
-
-    private function shouldSkipFetchByQueue()
-    {
-        $websites = Website::where('status_id', Website::STATUS_ACTIVE)->get();
-        if ($websites->isEmpty()) {
-            return false;
-        }
-
-        foreach ($websites as $website) {
-            $pending = WebsitePostQueue::where('website_id', $website->id) ->where('status_id', WebsitePostQueue::STATUS_PENDING)->count();
-            if ($pending < 2) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public function postExists($sourceId, $url)

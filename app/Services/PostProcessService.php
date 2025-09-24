@@ -119,6 +119,7 @@ class PostProcessService
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
             
+            $sitemapUrls = null;
             if ($postSitemap && $httpCode === 200) {
                 preg_match_all('/<loc>(.*?)<\/loc>/', $postSitemap, $postMatches);
                 if (!empty($postMatches[1])) {
@@ -131,7 +132,7 @@ class PostProcessService
             foreach ($titleWords as $word) {
                 if ($linkCount >= 3) break;
                 $wordFormat = removeAccents(strtolower($word));
-                if (empty($wordFormat) || strlen($wordFormat) <= 5) continue;
+                if (empty($wordFormat) || strlen($wordFormat) <= 5 || !$sitemapUrls) continue;
                 foreach ($sitemapUrls as $url) {
                     if (strpos($url, $wordFormat) !== false) {
                         

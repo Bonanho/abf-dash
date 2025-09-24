@@ -2,21 +2,25 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Source;
 use App\Models\SourcePost;
 use Illuminate\Console\Command;
 use DateTime;
 
 use App\Models\Website;
+use App\Models\WebsitePost;
 use App\Models\WebsitePostQueue;
 
 class PostQueue extends Command
 {
-    protected $signature = 'post:queue';
+    protected $signature = 'post:queue {--force}';
 
     protected $description = 'Baseado nas regras de website e posts de fontes disponiveis faz a fila para reescrita';
 
     public function handle()
     {
+        $force = $this->option('force');
+
         $printDate = (new DateTime())->format('Y-m-d H:i:s');
         $this->line("********** PostQueue - " . $printDate . " **********");
 
@@ -25,10 +29,13 @@ class PostQueue extends Command
         # Websites
         foreach( $websites as $website )
         {
-            echo "\n- $website->name \n";
+            echo "\n- $website->name";
             
-            $sourcePosts = null;
+            if( !$force && $this->skipByWebsiteRule($website) ) {
+                continue;
+            }
 
+            $sourcePosts = null;
             if( $website->Sources )
             {
                 # last Posts by website
@@ -48,6 +55,9 @@ class PostQueue extends Command
                 foreach( $website->Sources as $wSource )
                 {
                     $source = $wSource->Source;
+                    if( $source->status_id != Source::STATUS_ACTIVE){
+                        continue;
+                    }
                     echo "   " . $source->name . " - ";
                     
                     if( isset($sourcePosts[$source->id]) )
@@ -76,5 +86,23 @@ class PostQueue extends Command
 
         $printDate = (new DateTime())->format('Y-m-d H:i:s');
         $this->line("\n********** PostQueue - FIM - " . $printDate . " **********\n");
+    }
+
+    public function skipByWebsiteRule( $website )
+    {
+        $pendingLimit = 5; // $website->config->postLimit;
+
+        $websitePostsPending = WebsitePost::where("website_id",$website->id)->where("status_id",WebsitePost::STATUS_PENDING)->count();
+        
+        echo " - Posts Pendentes: $websitePostsPending ";
+        
+        if( $websitePostsPending > $pendingLimit ) {
+            echo "( PULA... )";
+            return true;
+        }
+        
+        echo "\n";
+
+        return false;
     }
 }
