@@ -10,11 +10,13 @@
             <input type="hidden" name="action" id="action">
             <input type="hidden" name="rewrite" id="rewrite">
         
-            <x-app.table :titles="['Source Id','Fonte','Fonte Status','Categoria','Post-Status-Padrão','Reescrever','Status']">
+            <x-app.table :titles="['Source Id','Fonte','Fonte Status','Categoria','Post-Status-Padrão','Reescrever','Status','Posts OK/ERR']">
                 @foreach( $wSources as $wSource)
                     @php
                         $rewriteIcon = (@$wSource->doc->rewrite==1) ? "minus" : "plus";
                         $rewriteCall = "handleConfig(".(($rewriteIcon=="plus")?"1":"0").",'".codeEncrypt($wSource->id)."')";
+                        $wpost = $wSource->WPost->where("status_id",1)->count();
+                        $wpost.= " / ".$wSource->WPost->whereIn("status_id",[-1,11])->count();
                     @endphp
                     <tr>
                         <td>{{$wSource->source_id}}</td>
@@ -26,6 +28,7 @@
                             <x-app.icon type="{{$rewriteIcon}}" :onclick="$rewriteCall"></x-app.icon>
                         </td>
                         <td>{{$wSource->getStatus()}}</td>
+                        <td class="text-center">{{$wpost}}</td>
                     </tr>
                 @endForeach
             </x-app.table>

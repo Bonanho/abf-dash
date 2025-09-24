@@ -29,6 +29,10 @@ class WebsiteSource extends Model
         return $this->belongsTo(Source::class, 'source_id', 'id');
     }
 
+    public function WPost() {
+        return $this->hasMany(WebsitePost::class, 'website_source_id','id');
+    }
+
     ###############
     ### METHODS ###
 
