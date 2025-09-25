@@ -53,7 +53,7 @@ class PostProcessService
         }
         
         echo "content rewrite - ";
-        $processedParams->content = $this->rewriteAi( $postParams->content, 'content', $shouldRewrite );
+        $processedParams->content = $this->rewriteAi( $postParams->content, 'text', $shouldRewrite );
 
         echo "SEO - ";
         $seoData = SeoAiService::optimizeSeo($processedParams->title, $processedParams->description, $processedParams->content );
