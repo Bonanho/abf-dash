@@ -6,6 +6,8 @@ use App\Models\WebsitePostQueue;
 
 class PostProcessService
 {
+    public $websitePostQueue;
+
     public function getPostsToProcess( $typeId )
     {
         $websitePostsQueue = WebsitePostQueue::where("status_id",WebsitePostQueue::STATUS_PENDING)->orderBy("id","asc");
@@ -17,41 +19,32 @@ class PostProcessService
         return $websitePostsQueue;
     }
     
-    public function run( $wpqId, $devMode=false )
+    public function run( $wpqId )
     {
-        $websitePostQueue = WebsitePostQueue::find( $wpqId );
-        if( $websitePostQueue->status_id != WebsitePostQueue::STATUS_PENDING || !$websitePostQueue->SourcePost ){
+        $this->websitePostQueue = WebsitePostQueue::find( $wpqId );
+        if( $this->websitePostQueue->status_id != WebsitePostQueue::STATUS_PENDING || !$this->websitePostQueue->SourcePost ){
             return false;
         }
 
-        $websitePostQueue->setStatus( WebsitePostQueue::STATUS_PROCESSING );
+        $this->websitePostQueue->setStatus( WebsitePostQueue::STATUS_PROCESSING );
 
-        $postParams = $websitePostQueue->SourcePost->doc;
+        $postParams = $this->websitePostQueue->SourcePost->doc;
 
         $processedParams = (object) [];
-        
-        if( $devMode ) {
-            $processedParams->title       = "DevMode - ".$postParams->title;
-            $processedParams->description = "DevMode - ".$postParams->description;
-            $processedParams->content     = "DevMode - ".strLimit($postParams->content,100);
-            $processedParams->seoData     = (object) ["title"=>"'.$processedParams->title.'","description"=>"'.$processedParams->description.'","keywords"=>["DEVs","desenvolvimento","programação","desenvolvedor","software"],"focus_keyword"=>"DEVs"];
-            return $processedParams;
-        }
 
-        $shouldRewrite = (bool) ((@$websitePostQueue->WebsiteSource->doc->rewrite) ?? 0);
+        $shouldRewrite = ($this->websitePostQueue->type_id == WebsitePostQueue::TYPE_REWRITE) ? true : false;
 
-        if( $websitePostQueue->type_id == WebsitePostQueue::TYPE_COPY )
+        if( $this->websitePostQueue->type_id == WebsitePostQueue::TYPE_COPY )
         {
             $processedParams->title       = strip_tags($postParams->title);
             $processedParams->description = strip_tags($postParams->description);
         }
-        elseif( $websitePostQueue->type_id == WebsitePostQueue::TYPE_REWRITE )
+        elseif( $this->websitePostQueue->type_id == WebsitePostQueue::TYPE_REWRITE )
         {
             echo "title - ";
             $title = $this->rewriteAi( $postParams->title, 'title', $shouldRewrite );
             $processedParams->title = substr($title, -1) == '.' ? substr($title, 0, -1) : $title;
 
-            
             echo "description - ";
             $processedParams->description = $this->rewriteAi( $postParams->description, 'description', $shouldRewrite );
             if (mb_strlen($processedParams->description) > 160) {
@@ -68,10 +61,14 @@ class PostProcessService
 
         // otimização final de conteúdo após SEO (usa keywords e sitemap)
         $keywords = $processedParams->seoData->keywords ?? [];
-        $sitemap  = @$websitePostQueue->Website->config->siteMap ?? $websitePostQueue->Website->url.'post-sitemap.xml';
+        $sitemap  = @$this->websitePostQueue->Website->config->siteMap ?? $this->websitePostQueue->Website->url.'post-sitemap.xml';
         try {
-            $processedParams->content = self::optimizeContent($processedParams->title, $processedParams->content, $keywords, $websitePostQueue->Website->url.$sitemap);
-        } catch (\Exception $e) {}
+            $processedParams->content = self::optimizeContent($processedParams->title, $processedParams->content, $keywords, $this->websitePostQueue->Website->url.$sitemap);
+        } 
+        catch (\Exception $e) 
+        {
+
+        }
 
         return $processedParams;
     }
@@ -79,6 +76,12 @@ class PostProcessService
     public function rewriteAi( $text, $type=null, $shouldRewrite = true )
     {
         $result = RewriterAiService::getResultsAi( $text, $type, $shouldRewrite );
+        if ( !$result || $result=="" ) {
+            $this->websitePostQueue->status_id = WebsitePostQueue::STATUS_ERROR;
+            $this->websitePostQueue->doc = [ "erro"=>"Erro na reescrita de IA - Tipo: $type" ];
+            $this->websitePostQueue->save();
+            throw new \Exception("Erro na reescrita de IA - Tipo: $type");
+        }
         return $result;
     }
 

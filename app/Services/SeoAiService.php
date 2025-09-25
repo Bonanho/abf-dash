@@ -80,9 +80,10 @@ class SeoAiService
         $texto = json_decode($response, true);
         if (json_last_error() !== JSON_ERROR_NONE) return '';
 
-        if (!isset($texto['response'])) return '';
+        if (!isset($texto['choices'][0]['message']['content'])) return '';
 
-        $response = $texto['response'];
+        $response = $texto['choices'][0]['message']['content'];
+        
         return $response;
     }
 }

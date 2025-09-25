@@ -11,7 +11,10 @@ class RewriterAiService
         try 
         {
             if (empty($text)) return '';
-            return self::rewriterText($text, $type, $shouldRewrite);
+
+            $result = self::rewriterText($text, $type, $shouldRewrite);
+
+            return $result;
         }
         catch (\Exception $e) {
             dd( $e );
@@ -120,7 +123,7 @@ class RewriterAiService
             return "";
         }
 
-        $temp = $type == 'title' ? 0.3 : 0.2;
+        $temp = ($type == 'title') ? 0.3 : 0.2;
         $urlIa = "https://api.openai.com/v1/chat/completions";
         $body = [
             'model' => 'gpt-4o-mini',
@@ -147,7 +150,7 @@ class RewriterAiService
             CURLOPT_POSTFIELDS => json_encode($body, JSON_UNESCAPED_UNICODE),
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
-                'Authorization: Bearer '.env("AI_TOKEN").''
+                'Authorization: Bearer '.env("AI_TOKEN")
             ],
             CURLOPT_TIMEOUT => 300
         ];
@@ -168,8 +171,8 @@ class RewriterAiService
         $texto = json_decode($response, true);
         if (json_last_error() !== JSON_ERROR_NONE) return "";
 
-        if (!isset($texto['response'])) return "";
-        $response = $texto['response'];
+        if (!isset($texto['choices'][0]['message']['content'])) return "";
+        $response = $texto['choices'][0]['message']['content'];
 
         return $response;
     }

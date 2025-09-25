@@ -11,7 +11,7 @@ use App\Models\WebsitePostQueue;
 
 class PostProcess extends Command
 {
-    protected $signature = 'post:process {typeId?} {--dev}';
+    protected $signature = 'post:process {typeId?}';
 
     protected $description = 'Pega um registro da fila e reescreve a matéria para um website';
 
@@ -21,7 +21,6 @@ class PostProcess extends Command
         $this->line("********** PostProcess - " . $printDate . " **********");
 
         $typeId  = $this->argument('typeId') ?? false;
-        $devMode = $this->option('dev');
 
         $postProcessService = new PostProcessService();
         $websitePostsQueue = $postProcessService->getPostsToProcess( $typeId );
@@ -35,7 +34,14 @@ class PostProcess extends Command
 
                 $fetchedParameters = $wPostQ->SourcePost->doc;
 
-                $processedParams = $postProcessService->run( $wPostQ->id, $devMode );
+                $processedParams = $postProcessService->run( $wPostQ->id );
+                
+                if( !$processedParams )
+                {
+                    $wPostQ->status_id = WebsitePostQueue::STATUS_ERROR;
+                    $wPostQ->save();
+                    continue;
+                }
 
                 $websitePost = new WebsitePost();
                 $websitePost->website_post_queue_id = $wPostQ->id;
