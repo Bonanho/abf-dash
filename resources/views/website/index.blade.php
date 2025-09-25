@@ -11,7 +11,7 @@
                 <tr>
                     <td>{{$website->id}}</td>
                     <td>{{$website->name}}</td>
-                    <td>{{$website->url}}</td>
+                    <td><a href="{{$website->url}}" target="_blank">{{$website->url}}</a></td>
                     <td>{{$website->Category->name}}</td>
                     <td>{{$website->Company->name}}</td>
                     <td>{{$website->getStatus()}}</td>
