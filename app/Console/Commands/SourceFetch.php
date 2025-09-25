@@ -10,6 +10,7 @@ use App\Models\SourcePost;
 use App\Services\PostFetchService;
 use App\Models\Website;
 use App\Models\WebsitePostQueue;
+use App\Models\WebsiteSource;
 
 class SourceFetch extends Command
 {
@@ -27,6 +28,12 @@ class SourceFetch extends Command
         {   
             echo "\nSourceId: $source->id - Nome: $source->name - Tipo: **".Source::TYPES[$source->type_id]."** \n";
             
+            $hasWebsiteSource = WebsiteSource::where("source_id",$source->id)->count();
+            if($hasWebsiteSource==0){
+                echo "Sem associação a website! \n";
+                continue;
+            }
+
             try
             {   
                 $postFetchService = new PostFetchService($source);
