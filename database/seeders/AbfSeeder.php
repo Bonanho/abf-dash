@@ -70,15 +70,27 @@ class AbfSeeder extends Seeder
 
         
 
-        $postStatus = '{"defaultPostStatus":"publish"}';
+        $postStatus = '{"rewrite": 1, "defaultPostStatus": "publish"}';
         WebsiteSource::insert([
             ['website_id'=>1, 'source_id'=>'1', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
             ['website_id'=>1, 'source_id'=>'2', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>1, 'source_id'=>'3', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+
             ['website_id'=>2, 'source_id'=>'1', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
-            ['website_id'=>2, 'source_id'=>'3', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
-            ['website_id'=>3, 'source_id'=>'1', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
             ['website_id'=>2, 'source_id'=>'2', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
             ['website_id'=>2, 'source_id'=>'3', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+
+            ['website_id'=>3, 'source_id'=>'11', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>3, 'source_id'=>'12', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>3, 'source_id'=>'13', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>3, 'source_id'=>'14', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            
+            ['website_id'=>4, 'source_id'=>'11', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>4, 'source_id'=>'12', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>4, 'source_id'=>'13', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            ['website_id'=>4, 'source_id'=>'14', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
+            
+            ['website_id'=>5, 'source_id'=>'7', 'status_id'=>1, 'doc'=> $postStatus, 'created_at'=>$date, 'updated_at'=>$date],
         ]);
 
     }
