@@ -104,8 +104,10 @@ class PostFetchService
                     CURLOPT_TIMEOUT => 30,
                     CURLOPT_CONNECTTIMEOUT => 10,
                 ]);
-                
                 $response = curl_exec($ch);
+                if (stripos($response, 'recaptcha') !== false) {
+                    throw new \Exception("Erro ao acessar, RECAPTCHA !");
+                }
                 $error = curl_error($ch);
                 curl_close($ch);
 
@@ -134,7 +136,7 @@ class PostFetchService
             return $this->defineNewPostsResult( 0, $newPostUrl );
         }
         catch (\Throwable $e) {
-            throw new \Exception("Erro ao buscar no source", 0, $e);
+             throw new \Exception($e->getMessage(), 0, $e);
         }
 
     }
@@ -157,9 +159,9 @@ class PostFetchService
     public function getPostData( $sourcePostId ) 
     {
         $this->sourcePost = SourcePost::find($sourcePostId);
-        // if( $this->sourcePost->status_id != SourcePost::STATUS_PENDING ){
-        //     return false;
-        // }
+        if( $this->sourcePost->status_id != SourcePost::STATUS_PENDING ){
+            return false;
+        }
 
         $this->sourcePost->setStatus( SourcePost::STATUS_PROCESSING );
         try
