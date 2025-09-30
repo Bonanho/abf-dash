@@ -51,9 +51,17 @@ class Websites extends Controller
             $config->siteMap = $request->sitemap;
             $website->config = $config;
 
+            $useKeywords = ( $request->keywords!="" && strlen($request->keywords) > 3 ) ? true : false;
+            $keywords = ($useKeywords) ? explode("|||",$request->keywords) : "";
+
+            $doc = (@$website->doc) ?? (object) [];
+            $doc->useKeywords = $useKeywords;
+            $doc->keywords    = $keywords;
+            $website->doc     = $doc;
+
             $website->save();
 
-            return redirect()->route('website'); 
+            return redirect()->route('website-edit',codeEncrypt($website->id)); 
         }
         catch (\Exception $err) 
         {

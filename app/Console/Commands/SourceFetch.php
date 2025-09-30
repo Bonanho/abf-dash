@@ -7,6 +7,7 @@ use DateTime;
 
 use App\Models\Source;
 use App\Models\SourcePost;
+use App\Models\Website;
 use App\Services\PostFetchService;
 use App\Models\WebsiteSource;
 
@@ -48,6 +49,12 @@ class SourceFetch extends Command
                         if ($sourcePost) {
                             echo "OK \n";
                             $postFetchService->getPostData($sourcePost->id);
+                            
+                            if( !$this->postValidation($sourcePost->id) ) {
+                                echo "Matéria nao contem nenhuma palavra chave \n";
+                                continue;
+                            }
+
                             echo "PostData OK \n";
                         } else {
                             echo "Já Existe! \n";
@@ -68,12 +75,51 @@ class SourceFetch extends Command
         $this->line("\n********** SourceFetch - FIM - " . $printDate . " **********\n");
     }
 
-    public function postExists($sourceId, $url)
+    public function postValidation( $sourcePostId )
     {
-        $exists = SourcePost::where("source_id", $sourceId)->where("endpoint", $url)->count();
-        if ($exists) {
-            throw new \Exception("Matéria já existe");
-        }
+        ### CQCS ###
+        $website = Website::find(1);
+        if( $website->Company->name == "CQCS" )
+        {
+            $sourcePost = SourcePost::find($sourcePostId);
+
+            $count = 0;
+            $keywords = $website->doc->keywords;
+            
+            $objKeywords = (object) [];
+            $objKeywords->title = $objKeywords->description = $objKeywords->content = "";
+
+            foreach ($keywords as $keyword) 
+            {
+                $keyword = mb_strtolower($keyword);
+                if (stripos(mb_strtolower($sourcePost->doc->title), $keyword) !== false) {
+                    $objKeywords->title .= $keyword.", ";
+                    $count++;
+                }
+                if (stripos(mb_strtolower($sourcePost->doc->description), $keyword) !== false) {
+                    $objKeywords->description .= $keyword.", ";
+                    $count++;
+                }
+                if (stripos(mb_strtolower($sourcePost->doc->content), $keyword) !== false) {
+                    $objKeywords->content .= $keyword.", ";
+                    $count++;
+                }
+            }
+            
+            if( $count == 0){
+                $sourcePost->status_id = SourcePost::STATUS_ERROR;
+                $sourcePost->error = "Matéria não contém nenhuma palavra chave";
+                $sourcePost->save();
+
+                return false;
+            } 
+            else {
+                $sourcePost->error = $objKeywords;
+                $sourcePost->save();
+
+                 return true;
+            }
+        };
     }
 
 }

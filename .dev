@@ -24,7 +24,7 @@
 - Source com campos para regras gerais e de crawler
 - Criar uma coluna na tabela de cada SITE FONTE, com palavras para exclusão (strReplace) e trocar no méthodo dp PostFetchService
 
--- LOCAL http://wp-base.loc {"wpPass": "BonaWp2025$", "wpUser": "Bonanho", "siteMap": "wp-sitemap.xml"}
+-- LOCAL http://wp-base.loc {"wpPass": "BonaWp2025$", "wpUser": "Bonanho", "siteMap": "wp-sitemap.xml"} // wp-sitemap-posts-post-1.xml ?
 
 CQCS ( estes apesar de passar no validate dão erro )
 -- UPDATE sources SET doc = '{"erro": "Erro no source fetch"}', status_id = -2 WHERE id IN (5,17,23);
