@@ -120,6 +120,8 @@ class SourceFetch extends Command
                  return true;
             }
         };
+        
+        return true;
     }
 
 }
