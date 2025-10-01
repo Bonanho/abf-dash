@@ -17,7 +17,7 @@ class RewriterAiService
             return $result;
         }
         catch (\Exception $e) {
-            dd( $e );
+            //dd( $e );
             return $text;
         }
     }

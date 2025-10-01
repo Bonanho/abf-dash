@@ -121,7 +121,7 @@ class Websites extends Controller
             return redirect()->route('website-source',$request->website_id);
         }
         catch (\Exception $err) 
-        {   dd($err);
+        {   //dd($err);
             sessionMessage("error", "Erro ao salvar campanha:<br> {$err->getMessage()}");
 
             return redirect()->back();
@@ -137,7 +137,6 @@ class Websites extends Controller
     public function postsQueueList()
     {
         $queuePosts = WebsitePostQueue::all();
-
         return view('website.website-queue', compact('queuePosts'));
     }
 

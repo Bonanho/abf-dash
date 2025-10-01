@@ -9,7 +9,7 @@
                     <td>{{$queue->Website->name}}</td>
                     <td>{{$queue->Source->name}}</td>
                     <td>{{$queue->source_post_id}}</td>
-                    <td>{{strLimit($queue->SourcePost->doc->title)}}</td>
+                    <td>{{$queue->SourcePost ? strLimit($queue->SourcePost->doc->title ?? 'N/A') : 'N/A'}}</td>
                     <td>{{$queue->getStatus()}}</td>
                     <td>{{$queue->created_at->format("Y-m-d h:i:s")}}</td>
                 </tr>

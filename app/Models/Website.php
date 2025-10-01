@@ -45,6 +45,6 @@ class Website extends Model
     public function getNetworks() 
     {
         $networks = $this->networks;
-        dd($this->networks);
+        //dd($this->networks);
     }
 }

@@ -187,7 +187,7 @@ class PostPublishService
             return $post->id;
         } 
         catch (\Exception $e) {
-            dd($e);
+            //dd($e);
         }
     }
 
@@ -236,7 +236,7 @@ class PostPublishService
             return ['result' => $result, 'httpCode' => $httpCode];
         } 
         catch (\Exception $e) {
-            dd( $e );
+            //dd( $e );
         }
     }
 
