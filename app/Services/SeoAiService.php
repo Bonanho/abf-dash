@@ -24,17 +24,21 @@ class SeoAiService
 
     private static function generateKeywords($title, $description, $content) 
     {
-        $prompt = "Analise o seguinte conteúdo e extraia as 5 principais palavras-chave para SEO. 
-            Retorne apenas as palavras-chave separadas por vírgula, sem números, caracteres especiais ou pontuações.
-            Exemplo de retorno: 'palavra-chave1,palavra-chave2,palavra-chave3'.
-            Segue os textos: \n\nTítulo: " . $title . "\nDescrição: " . $description . "\nConteúdo: " . $content;
+        $system = "Analise o seguinte conteúdo e extraia as 5 principais palavras-chave para SEO. 
+            REGRAS OBRIGATÓRIAS:
+                1. Escreva as palavras-chave em PT-BR.
+                2. Retorne apenas as palavras-chave separadas por vírgula, sem números, caracteres especiais ou pontuações.
+            Exemplo de retorno: 'palavra-chave1,palavra-chave2,palavra-chave3'";
         
-        $keywords = self::callOpenAi($prompt, "Você é um especialista em SEO. Sua tarefa é identificar as palavras-chave mais relevantes para otimização e em PORTUGUÊS BRASILEIRO.");
+        $keywords = self::callOpenAi($system, "Identificar as palavras-chave mais relevantes. Título: " . $title . " Descrição: " . $description . " Conteúdo: " . $content);
         
         return array_map('trim', explode(',', $keywords));
     }
 
-    private static function callOpenAi($prompt, $system) {
+    private static function callOpenAi($system, $prompt) {
+
+        $numText = strlen($system) + strlen($prompt);
+        $maxTokens = (int) ceil($numText * 1.5);
 
         $urlIa = "https://api.openai.com/v1/chat/completions";
         $body = [
@@ -50,7 +54,7 @@ class SeoAiService
                 ]
             ],
             'temperature' => 0.2,
-            'max_tokens' =>  1.3
+            'max_tokens' =>  $maxTokens
         ];
 
         $ch = curl_init();
@@ -70,6 +74,7 @@ class SeoAiService
         curl_setopt_array($ch, $curlOptions);
 
         $response = curl_exec($ch);
+        
         if (curl_errno($ch)) {
             curl_close($ch);
             return '';
