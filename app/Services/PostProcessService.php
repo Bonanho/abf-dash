@@ -85,6 +85,91 @@ class PostProcessService
         return $result;
     }
 
+    /**
+     * Verifica se o sitemap é direto ou um index e retorna a URL final do sitemap
+     * Se for um index, busca o sitemap mais atualizado baseado no lastmod
+     */
+    private function getFinalSitemapUrl($sitemapUrl)
+    {
+        try {
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $sitemapUrl,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                CURLOPT_HTTPHEADER => [
+                    'Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
+                    'Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+                    'Accept-Encoding: gzip, deflate',
+                    'Connection: keep-alive',
+                    'Cache-Control: no-cache',
+                    'Pragma: no-cache',
+                    'DNT: 1',
+                    'Upgrade-Insecure-Requests: 1',
+                ],
+                CURLOPT_ENCODING => 'gzip, deflate'
+            ]);
+            
+            $sitemapContent = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            if (!$sitemapContent || $httpCode !== 200) {
+                return $sitemapUrl; // Retorna a URL original se houver erro
+            }
+            
+            // Verifica se é um sitemap index (contém <sitemapindex>)
+            if (strpos($sitemapContent, '<sitemapindex>') !== false) {
+                $sitemaps = $this->parseSitemapIndex($sitemapContent);  
+                if (!empty($sitemaps)) {
+                    $filteredSitemaps = array_filter($sitemaps, function($sitemap) {
+                        $url = $sitemap['url'];
+                        return strpos($url, 'sitemap-posts-post') !== false || 
+                               strpos($url, 'post-sitemap') !== false;
+                    });
+                    
+                    if (!empty($filteredSitemaps)) {
+                        usort($filteredSitemaps, function($a, $b) {
+                            return strtotime($b['lastmod']) - strtotime($a['lastmod']);
+                        });
+                        
+                        return $filteredSitemaps[0]['url'];
+                    }
+                    
+                    usort($sitemaps, function($a, $b) {
+                        return strtotime($b['lastmod']) - strtotime($a['lastmod']);
+                    });
+                    
+                    return $sitemaps[0]['url'];
+                }
+            }
+            return $sitemapUrl;
+            
+        } catch (\Exception $e) {
+            return $sitemapUrl;
+        }
+    }
+    
+    /**
+     * Faz o parse de um sitemap index e retorna array com URLs e lastmod
+     */
+    private function parseSitemapIndex($sitemapContent)
+    {
+        $sitemaps = [];
+        preg_match_all('/<sitemap>.*?<loc>(.*?)<\/loc>.*?<lastmod>(.*?)<\/lastmod>.*?<\/sitemap>/s', $sitemapContent, $matches, PREG_SET_ORDER);
+        
+        foreach ($matches as $match) {
+            $sitemaps[] = [
+                'url' => trim($match[1]),
+                'lastmod' => trim($match[2])
+            ];
+        }
+        return $sitemaps;
+    }
+
     private function optimizeContent( $title, $content, $postKeyWords, $postSitemapUrl ) 
     {
         try 
@@ -97,9 +182,12 @@ class PostProcessService
                 }
             }
 
+            // Verificar se o sitemap é direto ou um index
+            $finalSitemapUrl = $this->getFinalSitemapUrl($postSitemapUrl);
+            
             $ch = curl_init();
             curl_setopt_array($ch, [
-                CURLOPT_URL => $postSitemapUrl,
+                CURLOPT_URL => $finalSitemapUrl,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_SSL_VERIFYPEER => false,
                 CURLOPT_TIMEOUT => 300,
