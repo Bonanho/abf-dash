@@ -22,7 +22,7 @@ class SourceFetch extends Command
         $printDate = (new DateTime())->format('Y-m-d H:i:s');
         $this->line("********** SourceFetch - " . $printDate . " **********");
 
-        $sources = Source::where("status_id", Source::STATUS_ACTIVE)->get();
+        $sources = Source::where("status_id", Source::STATUS_ACTIVE)->where("id",3)->get();
         foreach($sources as $source) 
         {   
             echo "\nSourceId: $source->id - Nome: $source->name - Tipo: **".Source::TYPES[$source->type_id]."** \n";

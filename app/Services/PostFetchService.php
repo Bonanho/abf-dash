@@ -124,7 +124,9 @@ class PostFetchService
             }
 
             $crawler = new Crawler($response->body(), $baseUrl);
+
             $node = $crawler->filter($this->source->template->homeNew)->first();
+            dd( $node, $node->attr('href') );
             if (!$node->count()) {
                 throw new \Exception('Seletor de nova matéria não encontrou itens');
             }

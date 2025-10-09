@@ -7,7 +7,7 @@
     $websitePosts   = (strpos($uri, 'website-posts')) ? 'active' : '';
     $website        = (!$websiteQueue && !$websitePosts && strpos($uri, 'website')) ? 'active' : '';
     $sourcePost     = (strpos($uri, 'source-post')) ? 'active' : '';
-    $source         = (!$sourcePost && strpos($uri, 'source')) ? 'active' : '';
+    $source         = (!$sourcePost && strpos($uri, 'source') && !strpos($uri, 'web-source') ) ? 'active' : '';
 @endphp
 
 <nav class="sidebar sidebar-dark sidebar-fixed border-end" id="sidebar">

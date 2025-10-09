@@ -10,7 +10,7 @@
             <input type="hidden" name="action" id="action">
             <input type="hidden" name="rewrite" id="rewrite">
         
-            <x-app.table :titles="['Source Id','Fonte','Categoria','Post-Status-Padrão','Reescrever','Status','Posts OK/ERR']">
+            <x-app.table :titles="['Source Id','Fonte','Categoria','Post-Status-Padrão','Reescrever','Status','Posts OK','Post Erro']">
                 @foreach( $wSources as $wSource)
                     @php
                         $rewriteIcon = (@$wSource->doc->rewrite==1) ? "minus" : "plus";
@@ -18,8 +18,8 @@
 
                         $sourceStatusCss = ($wSource->Source->status_id==1) ? "text-success" : "text-danger";                        
                         
-                        $wpost = $wSource->WPost->where("status_id",1)->count();
-                        $wpost.= " / ".$wSource->WPost->whereIn("status_id",[-1,11])->count();
+                        $wpostOK = $wSource->WPost->where("status_id",1)->count();
+                        $wpostError = $wSource->WPost->whereIn("status_id",[-1,11])->count();
                     @endphp
                     <tr>
                         <td>{{$wSource->source_id}}</td>
@@ -32,7 +32,8 @@
                             <x-app.icon type="{{$rewriteIcon}}" :onclick="$rewriteCall"></x-app.icon>
                         </td>
                         <td>{{$wSource->getStatus()}}</td>
-                        <td class="text-center">{{$wpost}}</td>
+                        <td class="text-center">{{$wpostOK}}</td>
+                        <td class="text-center">{{$wpostError}}</td>
                     </tr>
                 @endForeach
             </x-app.table>

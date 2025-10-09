@@ -96,6 +96,13 @@ server{
     }
 }
 
+Estadão
+https://www.estadao.com.br/economia/negocios - .news-container a
+https://www.estadao.com.br/busca/?token=%257B%2522query%2522%253A%2522seguradora%2522%257D - .element content a
+
+
+
+
 ### Fontes CQCS
 Sites que precisamos reescrever
 Estadao
@@ -105,7 +112,7 @@ Sonho Seguro
 
 Sites e palavras que costumamos clipar:
 Seguem palavras e sites para clipar:
-Mercado de seguro
+Mercado de seguro 
 Mercado segurador
 setor de seguros
 setor segurador
@@ -125,6 +132,28 @@ Golpe do Seguro
 Corretor
 PrevidÍncia privada
 Seguro pirata
+
+$keywords = [
+    "mercado de seguro",
+    "mercado segurador",
+    "regulador de seguro",
+    "setor de seguro",
+    "seguro saúde",
+    "seguro de saúde",
+    "seguro de automóvel",
+    "seguro residencia",
+    "seguro de vida",
+    "seguradora",
+    "corretor de seguros",
+    "apólice de seguro",
+    "sinistro de seguro",
+    "golpe do seguro",
+    "previdência privada",
+    "seguro pirata",
+    "susep",
+    "dpvat",
+    "detra"
+];
 
 Di·rio oficial
 http://www.seguros.inf.br/index.php

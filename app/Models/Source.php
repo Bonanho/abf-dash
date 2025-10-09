@@ -36,6 +36,10 @@ class Source extends Model
         return $this->hasOne(AuxCategory::class, 'id', 'category_id');
     }
 
+    public function Posts() {
+        return $this->hasMany(SourcePost::class, 'source_id', 'id');
+    }
+
     ###############
     ### METHODS ###
 

@@ -12,6 +12,7 @@ use App\Http\Controllers\Clusters;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Reports;
 use App\Http\Controllers\Users;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 
 ##### Web Routes ######
 
@@ -33,7 +34,9 @@ Route::prefix('website')->middleware('auth')->group( function()
     Route::get('edit/{id?}',[Websites::class, 'edit'])->name('website-edit');
     Route::post('store',[Websites::class,'store'])->name('website-store');
 
-    Route::prefix('w-source')->middleware('auth')->group( function()
+    Route::get('web-posts/{websiteId}',[Websites::class, 'postsList'])->name('website-posts');
+
+    Route::prefix('web-source')->middleware('auth')->group( function()
     {
         Route::get('list/{websiteId}',[Websites::class, 'wSourceIndex'])->name('website-source');
         Route::post('store',[Websites::class,'wSourceStore'])->name('website-source-store');
@@ -47,7 +50,6 @@ Route::prefix('website-queue')->middleware('auth')->group( function()
 Route::prefix('website-posts')->middleware('auth')->group( function()
 {
     Route::get('list',[Websites::class, 'postsList'])->name('posts');
-    Route::post('store',[Websites::class,'postsStore'])->name('posts-store');
 });
 
 # Admin
@@ -90,10 +92,10 @@ Route::prefix('user')->middleware('auth')->group( function()
 
 #####
 # API
-// Route::prefix('api')->middleware('auth')->group( function()
-// {
-//     Route::post('clusters-manage',[ApiController::class, 'clustersManage']);
-// });
+Route::prefix('api')->withoutMiddleware([VerifyCsrfToken::class])->group( function()
+{
+    Route::post('keyword',[Websites::class,'keyword'])->name('website-keyword');
+});
 
 
 

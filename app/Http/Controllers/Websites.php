@@ -72,6 +72,44 @@ class Websites extends Controller
 
     }
 
+    public function keyword( Request $request )
+    {
+        try
+        {
+            $word = $request->keyword;
+
+            $website = Website::find( $request->websiteId );
+            
+            $keywords = ($website->doc->keywords) ?? [];
+
+            if( $request->action == "add"){
+                if (!in_array($word, $keywords)) {
+                    $keywords[] = $word;
+                }
+            }
+            else {
+                if (($key = array_search($word, $keywords)) !== false) {
+                    unset($keywords[$key]);
+                }
+            }
+
+            $doc = (@$website->doc) ?? (object) [];
+            $doc->useKeywords = ( count($keywords) > 0 ) ? true : false;
+            $doc->keywords    = $keywords;
+            $website->doc     = $doc;
+
+            $website->save();
+
+            return true;
+        }
+        catch (\Exception $err) 
+        {
+            sessionMessage("error", "Erro ao salvar keyword:<br> {$err->getMessage()}");
+
+            return false;
+        }
+    }
+
     ##################
     ## Website Sources
     
@@ -80,7 +118,7 @@ class Websites extends Controller
         $websiteId = codeDecrypt($websiteId);
         $wSources = WebsiteSource::where("website_id",$websiteId)->get();
 
-        return view('website.wsource-index', compact('websiteId','wSources'));
+        return view('website.website-source', compact('websiteId','wSources'));
     }
 
     public function wSourceStore( Request $request )
@@ -150,11 +188,15 @@ class Websites extends Controller
     ################
     ## Posts
 
-    public function postsList()
+    public function postsList( $websiteId = null )
     {
-        $posts = WebsitePost::all();
+        if( $websiteId ) {
+            $posts = WebsitePost::where("website_id",codeDecrypt($websiteId))->get();
+        } else {
+            $posts = WebsitePost::all();
+        }
 
-        return view('website.website-posts', compact('posts'));
+        return view('website.website-posts', compact('websiteId','posts'));
     }
 
     public function postsStore( Request $request )
