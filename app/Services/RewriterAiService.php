@@ -132,7 +132,6 @@ class RewriterAiService
             return "";
         }
 
-
         $urlIa = "https://api.openai.com/v1/chat/completions";
         $body = [
             'model' => 'gpt-4o-mini',
