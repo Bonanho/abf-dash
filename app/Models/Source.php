@@ -23,7 +23,8 @@ class Source extends Model
 
     CONST TYPE_WP = 1;
     CONST TYPE_CUSTOM = 2;
-    CONST TYPES = [1=>"WP", 2=>"Custom"];
+    CONST TYPE_CUSTOM_LIST = 3;
+    CONST TYPES = [1=>"WP", 2=>"Custom", 3=>"Cutsom LIST"];
 
     ####################
     ### RELATIONSHIP ###

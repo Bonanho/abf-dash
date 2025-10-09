@@ -2,7 +2,6 @@
     @php
         $websiteId = (@$website->id);
         $title = title(@$websiteId)." Campanha";
-        $keywords = (@$website->doc->useKeywords) ? implode("|||",$website->doc->keywords) : "";
     @endphp
     
     <x-app.box>
@@ -40,16 +39,18 @@
                             </button>
                         </div>
                     </div>
-                    @foreach($website->doc->keywords as $keyword)
-                        <span class="badge badge-secondary">
-                            {{$keyword}} &nbsp; &nbsp;
-                            @php
-                                $keyWordFunc = "keyWordRemove('".$keyword."')";
-                            @endphp
-                            <x-app.icon type="minus" :onclick="$keyWordFunc"></x-app.icon>
-                        </span>
-                        &nbsp;
-                    @endforeach
+                    @if( is_array($website->doc->keywords) )
+                        @foreach($website->doc->keywords as $keyword)
+                            <span class="badge badge-secondary">
+                                {{$keyword}} &nbsp; &nbsp;
+                                @php
+                                    $keyWordFunc = "keyWordRemove('".$keyword."')";
+                                @endphp
+                                <x-app.icon type="minus" :onclick="$keyWordFunc"></x-app.icon>
+                            </span>
+                            &nbsp;
+                        @endforeach
+                    @endif
                 </div>
             </div>
 

@@ -43,10 +43,11 @@ class Sources extends Controller
             $source->type_id     = $request->type_id;
 
             $template = ($source->template) ?? (object) [];
-            $template->wpEndpoint = $request->tpt_wp_endpoint;
-            $template->homeNew    = $request->tpt_home_new;
-            $template->title      = $request->tpt_title;
-            $template->content    = $request->tpt_content;
+            $template->listEndpoint = $request->tpt_list_endpoint;
+            $template->wpEndpoint   = $request->tpt_wp_endpoint;
+            $template->homeNew      = $request->tpt_home_new;
+            $template->title        = $request->tpt_title;
+            $template->content      = $request->tpt_content;
             $source->template = $template;
 
             $source->save();

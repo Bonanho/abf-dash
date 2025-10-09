@@ -4,6 +4,8 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\DomCrawler\Crawler;
+use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Storage;
 
 use App\Models\Source;
 use App\Models\SourcePost;
@@ -115,27 +117,39 @@ class PostFetchService
 
                 return $this->defineNewPostsResult( $data[0]->id, $this->apiUrlBasePost.$data[0]->id, $data[0] );
             }
+            elseif ($this->source->type_id === Source::TYPE_CUSTOM) 
+            {
+                // TYPE_CUSTOM
+                $baseUrl = $this->source->url;
+                $response = Http::get($baseUrl);
+                if (!$response->ok()) {
+                    throw new \Exception("Erro ao acessar {$baseUrl}: " . $response->status());
+                }
 
-            // TYPE_CUSTOM
-            $baseUrl = $this->source->url;
-            $response = Http::get($baseUrl);
-            if (!$response->ok()) {
-                throw new \Exception("Erro ao acessar {$baseUrl}: " . $response->status());
+                $crawler = new Crawler($response->body(), $baseUrl);
+
+                $node = $crawler->filter($this->source->template->homeNew)->first();
+                if (!$node->count()) {
+                    throw new \Exception('Seletor de nova matéria não encontrou itens');
+                }
+                $newPostUrl = $node->attr('href');
+                if (strpos($newPostUrl, 'http') !== 0) {
+                    $newPostUrl = rtrim($baseUrl, '/') . '/' . ltrim($newPostUrl, '/');
+                }
+
+                return $this->defineNewPostsResult( 0, $newPostUrl );
             }
+            elseif ($this->source->type_id === Source::TYPE_CUSTOM_LIST) 
+            {
+                $baseUrl = $this->source->template->listEndpoint;
+                
+                $crawler = $this->getBody($baseUrl);
+                $body = $crawler->filter('body')->text();
+                // $this->saveFile("estadao1", $body); // para testar o que ele pega // storage/app/private...
+                $arrUrls = $this->extrairCanonicalUrls($body);
 
-            $crawler = new Crawler($response->body(), $baseUrl);
-
-            $node = $crawler->filter($this->source->template->homeNew)->first();
-            dd( $node, $node->attr('href') );
-            if (!$node->count()) {
-                throw new \Exception('Seletor de nova matéria não encontrou itens');
+                return $this->defineNewPostsResult( 0, $arrUrls );
             }
-            $newPostUrl = $node->attr('href');
-            if (strpos($newPostUrl, 'http') !== 0) {
-                $newPostUrl = rtrim($baseUrl, '/') . '/' . ltrim($newPostUrl, '/');
-            }
-
-            return $this->defineNewPostsResult( 0, $newPostUrl );
         }
         catch (\Throwable $e) {
              throw new \Exception($e->getMessage(), 0, $e);
@@ -145,13 +159,17 @@ class PostFetchService
 
     protected function defineNewPostsResult( $id, $endpoint, $data = null)
     {
-        $resultData = (object) [];
+        $endpoints = ( is_array($endpoint) ) ? $endpoint : [$endpoint];
+        
+        foreach( $endpoints as $endpoint )
+        {
+            $resultData = (object) [];
+            $resultData->id       = $id;
+            $resultData->data     = $data;
+            $resultData->endpoint = $endpoint;
 
-        $resultData->id       = $id;
-        $resultData->endpoint = $endpoint;
-        $resultData->data     = $data;
-
-        $result[] = $resultData;
+            $result[] = $resultData;
+        }
 
         return $result;
     }
@@ -220,7 +238,7 @@ class PostFetchService
             $imageUrl = $crawler->filterXPath('//meta[@property="og:image"]')->attr('content');    
             if ($this->testImageDownload($imageUrl)) {
                 $result->image = $imageUrl;
-                echo "Imagem OK: " . $imageUrl . "\n";
+                //echo "Imagem OK: " . $imageUrl . "\n";
             } else {
                 $result->image = "";
                 echo "Imagem inválida ou inacessível, ignorando: " . $imageUrl . "\n";
@@ -394,6 +412,74 @@ class PostFetchService
         {
             throw new \Exception("Erro ao buscar dados do post", 0, $e);
         }
+    }
+
+
+    
+
+    function fetchCrawler(string $url): Crawler
+    {
+        // Criando o cliente HTTP
+        $client = new Client([
+            'allow_redirects' => true, // Seguir redirecionamentos
+            'timeout' => 15,           // Timeout em segundos
+            'verify' => true,          // Verifica SSL
+            'headers' => [
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language' => 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+                'Accept-Encoding' => 'gzip, deflate, br',
+                'Connection' => 'keep-alive',
+            ],
+        ]);
+
+        try {
+            $response = $client->get($url);
+
+            $body = (string) $response->getBody();
+            $baseUrl = $response->getHeaderLine('X-Guzzle-Effective-Url') ?: $url;
+
+            $crawler = new Crawler($body, $baseUrl);
+
+            return $crawler;
+
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Erro ao acessar a URL: " . $e->getMessage());
+        }
+    }
+
+    public function getBody($url)
+    {
+        $response = Http::withHeaders([
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language' => 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+        ])->get($url);
+
+        if ($response->failed()) {
+            throw new \Exception("Erro ao acessar a URL: $url");
+        }
+
+        $crawler = new Crawler($response->body(), $url);
+
+        return $crawler;
+    }
+
+    public function saveFile( $fileName, $content )
+    {
+        $fileName = $fileName."_".date("Ymd_his").".html";
+        Storage::put($fileName, $content);
+
+        return 'Conteúdo salvo em storage/app/body.html';
+    }
+
+    public function extrairCanonicalUrls($html)
+    {
+        preg_match_all('/"canonical_url"\s*:\s*"([^"]+)"/', $html, $matches);
+
+        $urls = $matches[1] ?? [];
+
+        return $urls;
     }
 
 }

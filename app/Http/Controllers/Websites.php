@@ -51,14 +51,6 @@ class Websites extends Controller
             $config->siteMap = $request->sitemap;
             $website->config = $config;
 
-            $useKeywords = ( $request->keywords!="" && strlen($request->keywords) > 3 ) ? true : false;
-            $keywords = ($useKeywords) ? explode("|||",$request->keywords) : "";
-
-            $doc = (@$website->doc) ?? (object) [];
-            $doc->useKeywords = $useKeywords;
-            $doc->keywords    = $keywords;
-            $website->doc     = $doc;
-
             $website->save();
 
             return redirect()->route('website-edit',codeEncrypt($website->id)); 
@@ -80,10 +72,10 @@ class Websites extends Controller
 
             $website = Website::find( $request->websiteId );
             
-            $keywords = ($website->doc->keywords) ?? [];
+            $keywords = ($website->doc->keywords && is_array($website->doc->keywords)) ? $website->doc->keywords : [];
 
             if( $request->action == "add"){
-                if (!in_array($word, $keywords)) {
+                if ( !in_array($word, $keywords) ) {
                     $keywords[] = $word;
                 }
             }

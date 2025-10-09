@@ -17,6 +17,10 @@
                 <x-app.form.input size="2" type="select" label="Categoria" name="category_id" :value="@$source->category_id" :options="@$categories"></x-app.form.input>
                 <x-app.form.input size="2" type="select" label="Status" name="status_id" :value="@$source->status_id"></x-app.form.input>
             </div>
+            <hr>** LIST ENDPOINT ** <br><br>
+            <div class="row">
+                <x-app.form.input size="6" type="text" label="LIST ENDPOINT" name="tpt_list_endpoint" :value="@$source->template->listEndpoint"></x-app.form.input>
+            </div>
             <hr>** WP ENDPOINT ** <br><br>
             <div class="row">
                 <x-app.form.input size="6" type="text" label="WP ENDPOINT" name="tpt_wp_endpoint" :value="@$source->template->wpEndpoint"></x-app.form.input>

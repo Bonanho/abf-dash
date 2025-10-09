@@ -44,7 +44,7 @@ class SourcePost extends Model
 
     public static function register( $source, $postData )
     {
-        $exists = SourcePost::where("source_id", $source->id)->where("post_origin_id",$postData->id)->count();
+        $exists = SourcePost::where("source_id", $source->id)->where("endpoint",$postData->endpoint)->count();
         if( $exists ){
             return null;
         }
