@@ -103,6 +103,8 @@ class RewriterAiService
             ";
         }
 
+        $temp = ($type == 'title') ? 0.3 : 0.2;
+
         if (!$shouldRewrite) {
             if ($type == 'text') {
                 $contentPrompt = " REGRA FUNDAMENTAL:
@@ -116,6 +118,8 @@ class RewriterAiService
                     4. NUNCA envolva o resultado em <html>, <head> ou <body>.
                     5. NÃO escape os sinais de menor/maior; as tags devem ser reais, não literais.
                 ";
+
+                $temp = 0.1;
             }
         }
 
@@ -128,7 +132,7 @@ class RewriterAiService
             return "";
         }
 
-        $temp = ($type == 'title') ? 0.3 : 0.2;
+
         $urlIa = "https://api.openai.com/v1/chat/completions";
         $body = [
             'model' => 'gpt-4o-mini',
