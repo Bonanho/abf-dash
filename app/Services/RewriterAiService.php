@@ -105,9 +105,14 @@ class RewriterAiService
 
         if (!$shouldRewrite) {
             if ($type == 'text') {
-                $contentPrompt = "REGRAS OBRIGATÓRIAS:
+                $contentPrompt = " REGRA FUNDAMENTAL:
+                - NUNCA, JAMAIS, EM HIPÓTESE ALGUMA altere o texto ou palavras do texto.
+                - Mantenha EXATAMENTE o texto como está no original
+
+                REGRAS OBRIGATÓRIAS:
                     1. Retorne o texto principal sem alterações, apenas removendo class, id e deixando o html mais limpo
-                    2. Remova menções a anuncios, leituras fora desse texto etc.
+                    2. Remova menções a anuncios, leituras fora desse texto (como leia também, leia mais, etc).
+                    3. NUNCA mude o texto original enviado.
                     4. NUNCA envolva o resultado em <html>, <head> ou <body>.
                     5. NÃO escape os sinais de menor/maior; as tags devem ser reais, não literais.
                 ";
