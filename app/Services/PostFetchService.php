@@ -142,11 +142,12 @@ class PostFetchService
             elseif ($this->source->type_id === Source::TYPE_CUSTOM_LIST) 
             {
                 $baseUrl = $this->source->template->listEndpoint;
-                
+                echo "$baseUrl\n";
                 $crawler = $this->getBody($baseUrl);
-                $body = $crawler->filter('body')->text();
-                // $this->saveFile("estadao1", $body); // para testar o que ele pega // storage/app/private...
-                $arrUrls = $this->extrairCanonicalUrls($body);
+
+                $method = "customList_".$this->source->id;
+                $arrUrls = $this->$method($crawler);
+                // $this->saveFile("valor2", $body); // para testar o que ele pega // storage/app/private...
 
                 return $this->defineNewPostsResult( 0, $arrUrls );
             }
@@ -473,11 +474,45 @@ class PostFetchService
         return 'Conteúdo salvo em storage/app/body.html';
     }
 
-    public function extrairCanonicalUrls($html)
+    #################################
+    ## CustomList por SOURCES ID
+    public function customList_1($crawler) # Estadão
     {
-        preg_match_all('/"canonical_url"\s*:\s*"([^"]+)"/', $html, $matches);
+        $body = $crawler->filter('body')->text();
+
+        preg_match_all('/"canonical_url"\s*:\s*"([^"]+)"/', $body, $matches);
 
         $urls = $matches[1] ?? [];
+
+        return $urls;
+    }
+    public function customList_2($crawler) # Valor Economico
+    {
+        $urls = [];
+        $links = $crawler->filter('.bastian-page .feed-post-link')->each(function ($node) {
+            return $node->attr('href');
+        });
+
+        foreach ($links as $link) {
+            if( $link ){
+                $urls[] = $link;
+            }
+        }
+
+        return $urls;
+    }
+    public function customList_16($crawler) # O Globo
+    {
+        $urls = [];
+        $links = $crawler->filter('.bastian-page .feed-post-link')->each(function ($node) {
+            return $node->attr('href');
+        });
+
+        foreach ($links as $link) {
+            if( $link ){
+                $urls[] = $link;
+            }
+        }
 
         return $urls;
     }

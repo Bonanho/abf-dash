@@ -46,9 +46,9 @@ class SourceFetch extends Command
                 $postNew = $postFetchService->fetchNewPost();
                 foreach ($postNew as $postData) 
                 {
-                    if( $source->id == 1 ) 
+                    if( $source->type_id == Source::TYPE_CUSTOM_LIST ) 
                     {
-                        $url = ( strpos($postData->endpoint,"ttps:")) ? $postData->endpoint : "https://www.estadao.com.br".$postData->endpoint;
+                        $url = ( strpos($postData->endpoint,"ttps:")) ? $postData->endpoint : $source->url.$postData->endpoint;
                         echo "\n$url\n";
 
                         $exists = SourcePost::where("source_id", $source->id)->where("endpoint",$url)->count();
