@@ -123,7 +123,7 @@ class RewriterAiService
                     9. Se não houver conteúdo textual relevante, retorne apenas o texto sem tags
                 ";
 
-                $temp = 0.1;
+                $temp = 0;
             }
         }
 
