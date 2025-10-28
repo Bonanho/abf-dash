@@ -113,10 +113,10 @@ class RewriterAiService
 
                 REGRAS OBRIGATÓRIAS PARA LIMPEZA HTML:
                     1. Retorne APENAS o texto principal com tags HTML puras de formatação
-                    2. REMOVA COMPLETAMENTE todas as tags estruturais: <div>, <span>, <section>, <article>, <header>, <footer>, <nav>, <aside>
+                    2. REMOVA COMPLETAMENTE todas as tags estruturais: <div>, <span>, <section>, <article>, <header>, <footer>, <nav>, <aside>, html, head, body, etc.
                     3. REMOVA todos os atributos: class, id, style, data-*, onclick, onload, etc.
                     4. MANTENHA APENAS estas tags de formatação: <p>, <h1>, <h2>, <h3>, <h4>, <h5>, <h6>, <strong>, <b>, <em>, <i>, <u>, <br>, <ul>, <ol>, <li>, <a>
-                    5. Para links <a>, mantenha apenas o atributo href, remova target, rel, etc.
+                    5. Para links <a>, mantenha os atributos href, target, rel.
                     6. Remova menções a anuncios, leituras fora desse texto (como leia também, leia mais, etc)
                     7. NUNCA envolva o resultado em <html>, <head> ou <body>
                     8. NÃO escape os sinais de menor/maior; as tags devem ser reais, não literais
