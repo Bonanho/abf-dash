@@ -111,12 +111,16 @@ class RewriterAiService
                 - NUNCA, JAMAIS, EM HIPÓTESE ALGUMA altere o texto ou palavras do texto.
                 - Mantenha EXATAMENTE o texto como está no original
 
-                REGRAS OBRIGATÓRIAS:
-                    1. Retorne o texto principal sem alterações, apenas removendo class, id e deixando o html mais limpo
-                    2. Remova menções a anuncios, leituras fora desse texto (como leia também, leia mais, etc).
-                    3. NUNCA mude o texto original enviado.
-                    4. NUNCA envolva o resultado em <html>, <head> ou <body>.
-                    5. NÃO escape os sinais de menor/maior; as tags devem ser reais, não literais.
+                REGRAS OBRIGATÓRIAS PARA LIMPEZA HTML:
+                    1. Retorne APENAS o texto principal com tags HTML puras de formatação
+                    2. REMOVA COMPLETAMENTE todas as tags estruturais: <div>, <span>, <section>, <article>, <header>, <footer>, <nav>, <aside>
+                    3. REMOVA todos os atributos: class, id, style, data-*, onclick, onload, etc.
+                    4. MANTENHA APENAS estas tags de formatação: <p>, <h1>, <h2>, <h3>, <h4>, <h5>, <h6>, <strong>, <b>, <em>, <i>, <u>, <br>, <ul>, <ol>, <li>, <a>
+                    5. Para links <a>, mantenha apenas o atributo href, remova target, rel, etc.
+                    6. Remova menções a anuncios, leituras fora desse texto (como leia também, leia mais, etc)
+                    7. NUNCA envolva o resultado em <html>, <head> ou <body>
+                    8. NÃO escape os sinais de menor/maior; as tags devem ser reais, não literais
+                    9. Se não houver conteúdo textual relevante, retorne apenas o texto sem tags
                 ";
 
                 $temp = 0.1;
