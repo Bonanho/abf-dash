@@ -20,7 +20,7 @@ class RewriterAiService
         }
         catch (\Exception $e) {
             //dd( $e );
-            return $text;
+            return self::errorResponse("Erro inesperado no processo");
         }
     }
 
@@ -141,7 +141,8 @@ class RewriterAiService
         $maxContextTokens = 15000; //"message": "max_tokens is too large: 22160. This model supports at most 16384 completion tokens, whereas you provided 22160."
         if ($numText > $maxContextTokens) {
             echo "Matéria ignorada: excede limite de tokens do GPT-4o-mini (" . number_format($numText) . " caracteres > " . number_format($maxContextTokens) . " tokens)\n";
-            return "";
+
+            return self::errorResponse( "Matéria excede limite de tokens do GPT-4o-mini com ".number_format($numText) );
         }
 
         $urlIa = "https://api.openai.com/v1/chat/completions";
@@ -180,7 +181,7 @@ class RewriterAiService
         $response = curl_exec($ch);
         if (curl_errno($ch)) {
             curl_close($ch);
-            return "";
+            return self::errorResponse("Erro na requisição para AI");
         }
         
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
