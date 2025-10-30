@@ -45,7 +45,7 @@ class RewriterAiService
                     3. REMOVA todos os atributos: class, id, style, data-*, onclick, onload, etc.
                     4. MANTENHA APENAS estas tags de formatação: <p>, <h1>, <h2>, <h3>, <h4>, <h5>, <h6>, <strong>, <b>, <em>, <i>, <u>, <br>, <ul>, <ol>, <li>, <a>
                     5. Para links <a>, mantenha os atributos href, target, rel.
-                    6. Remova menções a anuncios, leituras fora desse texto (como leia também, leia mais, etc)
+                    6. Remova menções a anuncios, leituras fora desse texto (como leia também, leia mais, notícias relacionadas, conteúdo relacionado, etc)
                     7. NUNCA envolva o resultado em <html>, <head> ou <body>
                     8. NÃO escape os sinais de menor/maior; as tags devem ser reais, não literais
                     9. Se não houver conteúdo textual relevante, retorne apenas o texto sem tags
