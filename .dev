@@ -225,3 +225,15 @@ WEBSITE
     - BONA N 
 FONTE
     - CNN
+
+
+### DB-PROD ###
+# DB_HOST=168.231.95.107
+# DB_DATABASE=db_cqcs
+# DB_USERNAME=devs
+# DB_PASSWORD=Devs@2025?!
+
+mysqldump -h 168.231.95.107 -u devs -p db_cqcs > db_cqcs_2025-10-29.sql
+mysql -u root -p cqcs_dash < db_cqcs_2025-10-29.sql
+
+UPDATE `cqcs_dash`.`websites` SET `url` = 'http://wp-base.loc', `config` = '{"wpPass": "BonaWp2025$", "wpUser": "Bonanho", "siteMap": "wp-sitemap-posts-post-1.xml"}' WHERE (`id` = '1');

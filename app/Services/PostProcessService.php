@@ -52,7 +52,7 @@ class PostProcessService
             }
         }
         
-        echo "content rewrite - ";
+        echo "content AI (".$this->websitePostQueue->getType().") - ";
         $processedParams->content = $this->rewriteAi( $postParams->content, 'text', $shouldRewrite );
 
         echo "SEO - ";

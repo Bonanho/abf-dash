@@ -189,10 +189,12 @@ class PostFetchService
         {
             if ( $this->source->type_id == Source::TYPE_WP ) 
             {
+                echo "**WP**";
                 $doc = $this->defineResultObj($this->sourcePost->post_data); // $postData
             }
             else 
             {
+                echo "**CUSTOM**";
                 $doc = $this->getCustomPostDataByUrl($this->sourcePost->endpoint);
                 if (empty(trim($doc->content))) {
                     throw new \Exception('Conteúdo insuficiente');

@@ -31,8 +31,32 @@ class RewriterAiService
 
         if (empty($text)) return $text;
 
-        if ($type == 'text') {
-            $system = "Você é um Jornalista, especialista em reescrever textos para melhor indexação no Google News e SEO, reescreva o texto e Siga estas regras obrigatórias:
+        if (!$shouldRewrite) 
+        {
+            if ($type == 'text') 
+            {
+                $promptSystem = " REGRA FUNDAMENTAL:
+                - NUNCA, JAMAIS, EM HIPÓTESE ALGUMA altere o texto ou palavras do texto.
+                - Mantenha EXATAMENTE o texto como está no original
+
+                REGRAS OBRIGATÓRIAS PARA LIMPEZA HTML:
+                    1. Retorne APENAS o texto principal com tags HTML puras de formatação
+                    2. REMOVA COMPLETAMENTE todas as tags estruturais: <div>, <span>, <section>, <article>, <header>, <footer>, <nav>, <aside>, html, head, body, etc.
+                    3. REMOVA todos os atributos: class, id, style, data-*, onclick, onload, etc.
+                    4. MANTENHA APENAS estas tags de formatação: <p>, <h1>, <h2>, <h3>, <h4>, <h5>, <h6>, <strong>, <b>, <em>, <i>, <u>, <br>, <ul>, <ol>, <li>, <a>
+                    5. Para links <a>, mantenha os atributos href, target, rel.
+                    6. Remova menções a anuncios, leituras fora desse texto (como leia também, leia mais, etc)
+                    7. NUNCA envolva o resultado em <html>, <head> ou <body>
+                    8. NÃO escape os sinais de menor/maior; as tags devem ser reais, não literais
+                    9. Se não houver conteúdo textual relevante, retorne apenas o texto sem tags
+                ";
+
+                $temp = 0;
+            }
+        }
+        elseif ( $shouldRewrite && $type == 'text' ) 
+        {
+            $promptSystem = "Você é um Jornalista, especialista em reescrever textos para melhor indexação no Google News e SEO, reescreva o texto e Siga estas regras obrigatórias:
                 1. Identificar e extrair apenas o conteúdo principal da matéria jornalística a partir de um HTML completo.
                 2. Ignorar completamente qualquer código-fonte, JavaScript, menus, anúncios, rodapés ou outros elementos que não façam parte da notícia.
                 3. Reescrever e otimizar o texto para torná-lo claro e coeso, mantendo os fatos originais.
@@ -58,7 +82,11 @@ class RewriterAiService
                 13. Remova citações a outros sites de notícias como CNN, O Antagonista, Exame etc.
                 14. Reescreva o texto em PT-BR.
             ";
-        } else {
+
+            $temp = 0.2;
+        } 
+        else 
+        {
             $RwType = 'textos';
             if ($type == 'title') {
                 $RwType = 'títulos';
@@ -75,7 +103,7 @@ class RewriterAiService
                 $RwMinMax = "Mínimo de ".$RwMin." caracteres e máximo de ".$RwMax.", mantendo o significado intacto.";
             }
 
-            $system = "Você é um Jornalista, especialista em reescrever ".$RwType." para Google News. Siga estas regras obrigatórias:
+            $promptSystem = "Você é um Jornalista, especialista em reescrever ".$RwType." para Google News. Siga estas regras obrigatórias:
                 REGRA FUNDAMENTAL: PRESERVAÇÃO ABSOLUTA DE NOMES PRÓPRIOS
                 - NUNCA, JAMAIS, EM HIPÓTESE ALGUMA altere ou substitua nomes próprios
                 - Mantenha os nomes EXATAMENTE como está no texto original
@@ -101,30 +129,8 @@ class RewriterAiService
 
                 ATENÇÃO CRÍTICA: Se você trocar qualquer nome próprio, a resposta estará INCORRETA.
             ";
-        }
 
-        $temp = ($type == 'title') ? 0.3 : 0.2;
-
-        if (!$shouldRewrite) {
-            if ($type == 'text') {
-                $contentPrompt = " REGRA FUNDAMENTAL:
-                - NUNCA, JAMAIS, EM HIPÓTESE ALGUMA altere o texto ou palavras do texto.
-                - Mantenha EXATAMENTE o texto como está no original
-
-                REGRAS OBRIGATÓRIAS PARA LIMPEZA HTML:
-                    1. Retorne APENAS o texto principal com tags HTML puras de formatação
-                    2. REMOVA COMPLETAMENTE todas as tags estruturais: <div>, <span>, <section>, <article>, <header>, <footer>, <nav>, <aside>, html, head, body, etc.
-                    3. REMOVA todos os atributos: class, id, style, data-*, onclick, onload, etc.
-                    4. MANTENHA APENAS estas tags de formatação: <p>, <h1>, <h2>, <h3>, <h4>, <h5>, <h6>, <strong>, <b>, <em>, <i>, <u>, <br>, <ul>, <ol>, <li>, <a>
-                    5. Para links <a>, mantenha os atributos href, target, rel.
-                    6. Remova menções a anuncios, leituras fora desse texto (como leia também, leia mais, etc)
-                    7. NUNCA envolva o resultado em <html>, <head> ou <body>
-                    8. NÃO escape os sinais de menor/maior; as tags devem ser reais, não literais
-                    9. Se não houver conteúdo textual relevante, retorne apenas o texto sem tags
-                ";
-
-                $temp = 0;
-            }
+            $temp = 0.3;
         }
 
         $numText = strlen($text);
@@ -142,7 +148,7 @@ class RewriterAiService
             'messages' => [
                 [
                     'role' => 'system',
-                    'content' => $system
+                    'content' => $promptSystem
                 ],
                 [
                     'role' => 'user',

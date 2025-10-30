@@ -10,7 +10,7 @@
             <input type="hidden" name="action" id="action">
             <input type="hidden" name="rewrite" id="rewrite">
         
-            <x-app.table :titles="['Source Id','Fonte','Categoria','Post-Status-Padrão','Reescrever','Status','Posts OK','Post Erro']">
+            <x-app.table :titles="['Source Id','Fonte','Post-Status-Padrão','Reescrever','Tipo','Posts OK','Post Erro']">
                 @foreach( $wSources as $wSource)
                     @php
                         $rewriteIcon = (@$wSource->doc->rewrite==1) ? "minus" : "plus";
@@ -26,12 +26,13 @@
                         <td class="{{$sourceStatusCss}}"><spam title="Fonte Status: {{$wSource->Source->getStatus()}}">
                             {{$wSource->Source->name}}</spam>
                         </td>
-                        <td>{{$wSource->Source->Category->name}}</td>
+                        {{-- <td>{{$wSource->Source->Category->name}}</td> --}}
                         <td>{{@$wSource->doc->defaultPostStatus}}</td>
                         <td>
                             <x-app.icon type="{{$rewriteIcon}}" :onclick="$rewriteCall"></x-app.icon>
                         </td>
-                        <td>{{$wSource->getStatus()}}</td>
+                        {{-- <td>{{$wSource->getStatus()}}</td> --}}
+                        <td>{{@$wSource->Source->getType()}}</td>
                         <td class="text-center">{{$wpostOK}}</td>
                         <td class="text-center">{{$wpostError}}</td>
                     </tr>
