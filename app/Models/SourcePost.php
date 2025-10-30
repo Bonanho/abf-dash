@@ -20,7 +20,7 @@ class SourcePost extends Model
     CONST STATUS_PROCESSING = 11;
     CONST STATUS_PENDING    = 0;
     CONST STATUS_ERROR      = -1;
-    CONST STATUS = [2=>"Concluido", 1=>"Proccessando", 0=>"Pendente", -1=>"Erro"];
+    CONST STATUS = [1=>"Concluido", 11=>"Proccessando", 0=>"Pendente", -1=>"Erro"];
 
     ####################
     ### RELATIONSHIP ###
