@@ -10,7 +10,9 @@ class RewriterAiService
      {
         try 
         {
-            if (empty($text)) return '';
+            if (empty($text)) {
+                return self::errorResponse("Variável text chegou vazia!");
+            }
 
             $result = self::rewriterText($text, $type, $shouldRewrite);
 
@@ -136,7 +138,7 @@ class RewriterAiService
         $numText = strlen($text);
         $maxTokens = (int) ceil($numText * 1.5);
         
-        $maxContextTokens = 128000;
+        $maxContextTokens = 15000; //"message": "max_tokens is too large: 22160. This model supports at most 16384 completion tokens, whereas you provided 22160."
         if ($numText > $maxContextTokens) {
             echo "Matéria ignorada: excede limite de tokens do GPT-4o-mini (" . number_format($numText) . " caracteres > " . number_format($maxContextTokens) . " tokens)\n";
             return "";
@@ -183,16 +185,31 @@ class RewriterAiService
         
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        
-        if ($httpCode !== 200) return "";
+
+        if ($httpCode !== 200) {
+            return self::errorResponse(json_decode($response)->error->message);
+        }
 
         $texto = json_decode($response, true);
-        if (json_last_error() !== JSON_ERROR_NONE) return "";
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return self::errorResponse("Erro ao decodificar JSON retornado pela AI");
+        }
 
-        if (!isset($texto['choices'][0]['message']['content'])) return "";
+        if (!isset($texto['choices'][0]['message']['content'])) {
+            return self::errorResponse("Erro ao decodificar receber texto de IA. Padrão (texto['choices'][0]['message']['content'])");
+        }
+
         $response = $texto['choices'][0]['message']['content'];
 
         return $response;
     }
 
+    public static function errorResponse( $error ) 
+    {
+        $response = (object) [];
+        $response->type = "Error";
+        $response->message = $error;
+
+        return $response;
+    }
 }

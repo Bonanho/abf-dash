@@ -51,7 +51,7 @@ class PostProcessService
                  $processedParams->description = mb_substr($processedParams->description, 0, 160) . '...';
             }
         }
-        
+
         echo "content AI (".$this->websitePostQueue->getType().") - ";
         $processedParams->content = $this->rewriteAi( $postParams->content, 'text', $shouldRewrite );
 
@@ -76,11 +76,13 @@ class PostProcessService
     public function rewriteAi( $text, $type=null, $shouldRewrite = true )
     {
         $result = RewriterAiService::getResultsAi( $text, $type, $shouldRewrite );
-        if ( !$result || $result=="" ) {
+
+        if ( is_object($result) && $result->type=="Error") 
+        {
             $this->websitePostQueue->status_id = WebsitePostQueue::STATUS_ERROR;
-            $this->websitePostQueue->doc = [ "erro"=>"Erro na reescrita de IA - Tipo: $type" ];
+            $this->websitePostQueue->doc = [ "erro"=>"Erro na reescrita de IA - Tipo: $type -- ".$result->message ];
             $this->websitePostQueue->save();
-            throw new \Exception("Erro na reescrita de IA - Tipo: $type");
+            throw new \Exception("Erro na reescrita de IA - Tipo: $type -- ".$result->message);
         }
         return $result;
     }

@@ -11,7 +11,11 @@
                     <td>{{$queue->source_post_id}}</td>
                     <td>{{$queue->SourcePost ? strLimit($queue->SourcePost->doc->title ?? 'N/A') : 'N/A'}}</td>
                     <td>{{$queue->getType()}}</td>
-                    <td>{{$queue->getStatus()}}</td>
+                    @if($queue->status_id==-1)
+                        <td title="{{json_encode($queue->doc)}}">{{$queue->getStatus()}}</td>
+                    @else
+                        <td>{{$queue->getStatus()}}</td>
+                    @endif
                     <td>{{$queue->created_at->format("Y-m-d h:i:s")}}</td>
                 </tr>
             @endForeach
