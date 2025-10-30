@@ -8,7 +8,11 @@
                     <td>{{$post->Source->name}}</td>
                     <td>{{$post->post_origin_id}}</td>
                     <td>{{$post->endpoint}}</td>
-                    <td>{{$post->status_id}}</td>
+                    @if($post->status_id==-1)
+                        <td title="{{json_encode($post->error)}}">{{$post->getStatus()}}</td>
+                    @else
+                        <td>{{$post->getStatus()}}</td>
+                    @endif
                     <td>{{$post->created_at->format("Y-m-d h:i:s")}}</td>
                 </tr>
             @endForeach
