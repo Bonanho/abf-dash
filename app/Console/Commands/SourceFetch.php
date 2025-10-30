@@ -59,7 +59,8 @@ class SourceFetch extends Command
 
                         $data = $postFetchService->getCustomPostDataByUrl($url);
 
-                        if( !$this->textValidation($data) ){
+                        $matchedWords = $this->textValidation($data);
+                        if( !$matchedWords ){
                             continue;
                         }
                         
@@ -69,6 +70,7 @@ class SourceFetch extends Command
                         $sourcePost->post_origin_id = 0;
                         $sourcePost->endpoint       = $url;
                         $sourcePost->doc            = $data;
+                        $sourcePost->error          = $matchedWords;
                         $sourcePost->status_id      = SourcePost::STATUS_DONE;
 
                         $sourcePost->save();
@@ -141,7 +143,7 @@ class SourceFetch extends Command
             }
         }
         
-        return true;
+        return $objKeywords;
     }
 
     public function postValidation( $sourcePostId )
