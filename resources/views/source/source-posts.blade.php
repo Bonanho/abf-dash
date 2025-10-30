@@ -2,18 +2,18 @@
 
     <x-app.box>
         
-        <x-app.table :titles="['Fonte','Post ID','URL','Status','Data']">
+        <x-app.table :titles="['Id','Fonte','URL','Status','Data']">
             @foreach( $posts as $post)
                 <tr>
+                    <td>{{$post->id}}</td>
                     <td>{{$post->Source->name}}</td>
-                    <td>{{$post->post_origin_id}}</td>
-                    <td>{{$post->endpoint}}</td>
+                    <td title="{{$post->endpoint}}"><a href="{{$post->endpoint}}" target="_blank">{{strLimit($post->endpoint)}}</td>
                     @if($post->status_id==-1)
                         <td title="{{json_encode($post->error)}}">{{$post->getStatus()}}</td>
                     @else
                         <td>{{$post->getStatus()}}</td>
                     @endif
-                    <td>{{$post->created_at->format("Y-m-d h:i:s")}}</td>
+                    <td data-order="{{$post->created_at->format("Ymdhis")}}">{{$post->created_at->format("Y-m-d h:i:s")}}</td>
                 </tr>
             @endForeach
         </x-app.table>
