@@ -2,12 +2,13 @@
 
     <x-app.box>
         
-        <x-app.table :titles="['Id','Fonte','URL','Status','Data']">
+        <x-app.table :titles="['Id','Fonte','URL','Tipo Source','Status','Data']">
             @foreach( $posts as $post)
                 <tr>
                     <td>{{$post->id}}</td>
                     <td>{{$post->Source->name}}</td>
                     <td title="{{$post->endpoint}}"><a href="{{$post->endpoint}}" target="_blank">{{strLimit($post->endpoint)}}</td>
+                    <td>{{$post->Source->getType()}}</td>
                     @if($post->status_id==-1)
                         <td title="{{json_encode($post->error)}}">{{$post->getStatus()}}</td>
                     @else
